@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bubble Height Fix</title>
+    <title>Marionette Final Stable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
+        /* --- 기본 설정 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: #0a0a0a; color: #fff; font-family: sans-serif; overflow-x: hidden; }
         a { color: inherit; text-decoration: none; }
@@ -14,8 +15,8 @@
         section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
         #hero { height: 100vh; background: radial-gradient(#333, #000); justify-content: center; z-index: 10; }
         #about { min-height: 50vh; background: #111; padding: 50px; text-align: center; z-index: 10; }
-        footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
 
+        /* 프로젝트 스테이지 (Pinned) */
         #stage {
             height: 100vh; width: 100%;
             background-color: #000;
@@ -24,64 +25,76 @@
             perspective: 1000px;
         }
 
-        .marionette-group {
-            position: absolute;
-            top: 0; left: 50%;
-            width: 2px; height: 100vh;
+        /* [NEW SECTION] 아카이브 섹션 (정적 Grid) */
+        #archive {
+            min-height: 100vh;
+            background-color: #050505;
+            padding: 100px 0;
+            position: relative;
+            z-index: 1;
+        }
+        #archive h2 { margin-bottom: 20px; }
+
+
+        /* 아카이브 컨테이너 및 아이템 스타일 */
+        .archive-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* PC: 4열 */
+            gap: 25px; 
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 30px;
             pointer-events: none;
-            will-change: transform, opacity, filter;
-            z-index: 5;
-            opacity: 0; visibility: hidden; 
+        }
+        .archive-item {
+            position: relative; 
+            height: 150px; 
+            pointer-events: auto; 
+            cursor: pointer;
+        }
+        
+        .archive-inner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .archive-item:hover .archive-inner {
+            transform: translateY(-5px); /* 리프트업 효과 적용 */
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .archive-item h4 { font-size: 1rem; margin: 0; font-weight: bold; }
+        .archive-item p { font-size: 0.75rem; color: #aaa; margin: 5px 0 0; }
+
+
+        footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
+
+        /* -------------------------------------------
+           Marionette & Bubble Styles (Rollback Code)
+           ------------------------------------------- */
+        .marionette-group {
+            position: absolute; top: 0; left: 50%; width: 2px; height: 100vh; pointer-events: none; will-change: transform, opacity, filter; z-index: 5; opacity: 0; visibility: hidden; 
         }
 
-        .pendulum {
-            position: absolute; top: 0; left: 0;
-            width: auto; 
-            display: flex; flex-direction: column; align-items: center;
-            transform-origin: center top; 
-            transform: translateX(-50%);
-        }
-
+        .pendulum { position: absolute; top: 0; left: 0; width: auto; display: flex; flex-direction: column; align-items: center; transform-origin: center top; }
         .string-rack { position: relative; width: 100%; }
-        .string {
-            position: absolute; top: 0; height: 100%; width: 1px; 
-            background: rgba(255, 255, 255, 0.3); 
-        }
+        .string { position: absolute; top: 0; height: 100%; width: 1px; background: rgba(255, 255, 255, 0.3); }
 
         .mockup-wrapper { position: relative; z-index: 2; margin-top: 0; }
-        .mockup-img {
-            display: block; border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-            object-fit: contain;
-        }
+        .mockup-img { display: block; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); object-fit: contain; }
         
         .p1 .mockup-img { width: 500px; height: auto; }
         .p2 .mockup-img { width: 300px; height: auto; }
         .p3 .mockup-img { width: 400px; height: auto; }
 
-        /* PC 버블 */
-        .info-bubbles {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90vw; max-width: 1000px; height: 600px;
-            pointer-events: none; z-index: 10;
-        }
-
-        .bubble {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 250px;
-            opacity: 0; visibility: hidden;
-            transition: transform 0.3s ease, background 0.3s ease;
-        }
-
-        /* 3,4번째 버튼 (PC) */
+        .info-bubbles { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 1000px; height: 600px; pointer-events: none; z-index: 10; }
+        .bubble { position: absolute; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 250px; opacity: 0; visibility: hidden; transition: transform 0.3s ease, background 0.3s ease; }
         a.bubble { pointer-events: auto; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
         a.bubble:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-3px); }
         .bubble h3 { font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
@@ -93,52 +106,37 @@
         .b-bottom-right { bottom: 15%; right: 20px; }
 
 
+        /* -------------------------------------------
+           📱 모바일 스타일 오버라이드
+           ------------------------------------------- */
         @media (max-width: 768px) {
-            .pendulum {
-                height: 100%; top: 0; justify-content: center; gap: 20px; padding-bottom: 50px;
-            }
-
-            .info-bubbles {
-                position: relative; top: auto; left: auto; transform: none;
-                width: 90vw; height: auto; margin-top: 0;
-                display: flex; flex-direction: column; gap: 8px; align-items: center;
-                flex-shrink: 0; 
-            }
-
-            .bubble {
-                position: relative; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
-                width: 100%; max-width: 100%; text-align: center; padding: 12px 15px;
-            }
-            .b-top-right { text-align: center; }
-
-            /* --- [핵심 수정] 2번째, 3번째, 4번째 버블 높이 통일 --- */
-            /* :nth-child(n+2) -> 2번째 요소부터 끝까지 적용 */
-            .info-bubbles .bubble:nth-child(n+2) {
-                display: flex;             /* 플렉스 박스로 변경 */
-                align-items: center;       /* 수직 중앙 정렬 */
-                justify-content: center;   /* 수평 중앙 정렬 */
-                min-height: 52px;          /* 최소 높이 강제 (버튼 크기 통일) */
-                padding: 0 15px;           /* 패딩 통일 */
-            }
-
-            .mockup-wrapper {
-                flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
-                min-height: 30vh; 
-            }
-
-            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img {
-                width: 100%; height: 100%; max-width: 85vw; object-fit: contain; 
-            }
+            .archive-container { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .archive-item { height: 120px; }
             
-            .string-rack { position: absolute; top: 0; z-index: 0; opacity: 0.5; }
-            .p1 .string-rack, .p2 .string-rack, .p3 .string-rack { height: 50% !important; }
+            .marionette-group {
+                position: absolute; left: 0; top: 0; width: 100%; height: 100vh;
+                display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+                padding-bottom: 50px;
+            }
+
+            .pendulum { position: relative; top: auto; left: auto; width: 100%; height: auto; display: flex; flex-direction: column; align-items: center; }
+            .info-bubbles { position: relative; transform: none; top: auto; left: auto; width: 90vw; height: auto; margin-top: -20px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 8px; align-items: center; flex-shrink: 0; }
+            .bubble { position: relative; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; width: 100%; max-width: 100%; text-align: center; padding: 12px 15px; }
+            .b-top-right { text-align: center; }
+            .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 15px; }
+
+            .mockup-wrapper { flex: 0 1 auto; display: flex; align-items: flex-start; justify-content: center; width: 100%; margin-top: 15vh; }
+            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { width: auto; max-width: 85vw; max-height: 45vh; object-fit: contain; }
+            
+            .string-rack { position: absolute; top: 0; z-index: 0; opacity: 0.5; height: 40vh !important; }
         }
 
     </style>
 </head>
 <body>
 
-    <section id="hero"><h1>Uniform Height</h1><p>모바일에서 2,3,4번 버블의<br>높이를 똑같이 맞췄습니다.</p></section>
+    <section id="hero"><h1>Final Build</h1><p>마리오네트 포트폴리오</p></section>
+    <section id="about"><h2>About Me</h2><p>마리오네트 컨셉 소개 및 자기소개</p></section>
     
     <section id="stage">
         
@@ -149,13 +147,8 @@
                     <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Web+Project'" alt="Web Project" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left">
-                        <h3>E-Commerce Platform</h3>
-                        <p>쇼핑몰 리뉴얼 프로젝트</p>
-                    </div>
-                    <div class="bubble b-top-right">
-                        <p><strong>Front-end Lead</strong> / React</p>
-                    </div>
+                    <div class="bubble b-top-left"><h3>E-Commerce Platform</h3><p>쇼핑몰 리뉴얼 프로젝트</p></div>
+                    <div class="bubble b-top-right"><p><strong>Front-end Lead</strong> / React</p></div>
                     <a href="#" class="bubble b-bottom-left" style="background: rgba(255,255,255,0.15);">📄 기획서 바로가기</a>
                     <a href="#" class="bubble b-bottom-right" style="background: rgba(255,255,255,0.15);">🚀 프로토타입 보기</a>
                 </div>
@@ -166,16 +159,11 @@
             <div class="pendulum">
                 <div class="string-rack" data-height="15vh" data-width="300px"></div>
                 <div class="mockup-wrapper">
-                    <img src="https://placehold.co/300x600/222/FFF?text=Mobile+App" alt="Mobile App" class="mockup-img">
+                    <img src="/img/mockup2.png" onerror="this.src='https://placehold.co/300x600/222/FFF?text=Mobile+App'" alt="Mobile App" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left">
-                        <h3>Fitness Tracker</h3>
-                        <p>운동 코칭 앱</p>
-                    </div>
-                    <div class="bubble b-top-right">
-                        <p><strong>UI/UX Designer</strong> / Figma</p>
-                    </div>
+                    <div class="bubble b-top-left"><h3>Fitness Tracker</h3><p>운동 코칭 앱</p></div>
+                    <div class="bubble b-top-right"><p><strong>UI/UX Designer</strong> / Figma</p></div>
                     <a href="#" class="bubble b-bottom-left">📄 기획서 바로가기</a>
                     <a href="#" class="bubble b-bottom-right">📱 앱 실행해보기</a>
                 </div>
@@ -189,13 +177,8 @@
                     <img src="https://placehold.co/500x500/333/FFF?text=Design" alt="Design Project" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left">
-                        <h3>Interactive Art</h3>
-                        <p>미디어 아트 전시</p>
-                    </div>
-                    <div class="bubble b-top-right">
-                        <p><strong>Creative Director</strong></p>
-                    </div>
+                    <div class="bubble b-top-left"><h3>Interactive Art</h3><p>미디어 아트 전시</p></div>
+                    <div class="bubble b-top-right"><p><strong>Creative Director</strong></p></div>
                     <a href="#" class="bubble b-bottom-left">📄 전시 기획안</a>
                     <a href="#" class="bubble b-bottom-right">🎨 인터랙션 영상</a>
                 </div>
@@ -204,11 +187,53 @@
 
     </section>
 
+    <section id="archive">
+        <h2>Archive 📁</h2>
+        <p style="opacity: 0.7; margin-bottom: 50px;">스크롤을 내려 과거의 그림, 영상, 컨셉 아트를 확인하세요.</p>
+        
+        <div class="archive-container">
+            </div>
+        
+    </section>
+
     <footer><p>End</p></footer>
 
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
+        // --- 1. 아카이브 컨텐츠 생성 함수 (Grid + Subtle Random Transform) ---
+        function createArchiveContent() {
+            const container = document.querySelector('.archive-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const titles = ['Character Design', '3D Modeling', 'Video Edit', 'Concept Art', 'Failed Project 2021', 'Figma Wireframe', 'TouchDesigner', 'Side Project App', 'Vector Illustration', 'Personal Logo', 'UX Research Data', 'Motion Graphics'];
+            const itemCount = 12;
+
+            for (let i = 0; i < itemCount; i++) {
+                // Inner/Outer 래퍼 추가 (Hover Fix 유지)
+                const item = document.createElement('div');
+                item.classList.add('archive-item');
+                
+                const inner = document.createElement('div');
+                inner.classList.add('archive-inner');
+
+                const title = titles[i % titles.length];
+                const year = 2025 - (i % 5);
+                inner.innerHTML = `<h4>${title}</h4><p>${year} Archive</p>`;
+                
+                // 랜덤 변형 (Outer Item에 적용)
+                const randRotate = (Math.random() * 4 - 2).toFixed(1); 
+                const randX = (Math.random() * 10 - 5).toFixed(1);     
+                const randY = (Math.random() * 10 - 5).toFixed(1);     
+                item.style.transform = `rotate(${randRotate}deg) translateX(${randX}px) translateY(${randY}px)`;
+                
+                item.appendChild(inner);
+                container.appendChild(item);
+            }
+        }
+
+        // --- 2. 실 생성 및 랜덤 배치 함수 ---
         function createBalancedStrings() {
             const racks = document.querySelectorAll('.string-rack');
             const zones = [{ min: 5, max: 20 }, { min: 30, max: 45 }, { min: 55, max: 70 }, { min: 80, max: 95 }];
@@ -216,8 +241,9 @@
             racks.forEach(rack => {
                 rack.innerHTML = ''; 
                 const isMobile = window.innerWidth <= 768;
-                if (!isMobile) { rack.style.height = rack.dataset.height; }
-                const w = isMobile ? '70vw' : rack.dataset.width;
+                let w = rack.dataset.width; 
+                if (isMobile) { rack.style.maxWidth = '90vw'; } 
+                else { rack.style.maxWidth = 'none'; rack.style.height = rack.dataset.height; }
                 rack.style.width = w;
 
                 zones.forEach(zone => {
@@ -233,53 +259,70 @@
                 });
             });
         }
+        
         createBalancedStrings();
-        window.addEventListener('resize', createBalancedStrings);
+        createArchiveContent();
+        window.addEventListener('resize', () => { createBalancedStrings(); createArchiveContent(); });
 
 
+        // --- 3. GSAP Timeline & Physics ---
         const tl = gsap.timeline({
             scrollTrigger: { trigger: "#stage", start: "top top", end: "+=8000", pin: true, scrub: 1 }
         });
 
+        gsap.set(".marionette-group", { autoAlpha: 0 }); 
         gsap.set(".bubble", { y: 30, autoAlpha: 0 }); 
 
-        // P1
-        tl.fromTo(".p1", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+        const isMobile = window.innerWidth <= 768;
+        const startX_Right = isMobile ? 0 : "35vw";
+        const startX_Left = isMobile ? 0 : "-35vw";
+        
+        // P1 Sequence
+        tl.fromTo(".p1", { x: startX_Right, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 }) 
           .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-        // P2
-          .fromTo(".p2", { x: "-35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+          
+        // P2 Sequence
+          .fromTo(".p2", { x: startX_Left, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 })
           .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-        // P3
-          .fromTo(".p3", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+          
+        // P3 Sequence
+          .fromTo(".p3", { x: startX_Right, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p3 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 })
           .to(".p3 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p3", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
 
+
+        // --- 4. 물리 엔진 (Ticker) ---
         const groups = document.querySelectorAll(".marionette-group");
         groups.forEach(group => {
             const pendulum = group.querySelector(".pendulum");
             let rotation = 0; let velocity = 0; let prevX = null;
-            const CONFIG = { TENSION: 0.05, FRICTION: 0.85, FORCE: 0.04, MAX_ANGLE: 8 };
+            
+            // [최종 안정화 설정값 적용]
+            const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 }; 
 
             gsap.ticker.add(() => {
                 const currentX = group.getBoundingClientRect().left;
                 if (prevX === null || Math.abs(currentX) > 10000) { prevX = currentX; return; }
                 const dx = currentX - prevX;
                 const opacity = window.getComputedStyle(group).opacity;
+                
                 if (Math.abs(dx) < 50 && opacity > 0.1) { 
                     velocity += dx * CONFIG.FORCE; velocity += -rotation * CONFIG.TENSION; velocity *= CONFIG.FRICTION; rotation += velocity;
                     if (rotation > CONFIG.MAX_ANGLE) rotation = CONFIG.MAX_ANGLE;
                     if (rotation < -CONFIG.MAX_ANGLE) rotation = -CONFIG.MAX_ANGLE;
                     if (Math.abs(rotation) < 0.01 && Math.abs(velocity) < 0.01) { rotation = 0; velocity = 0; }
                 } else { velocity = 0; }
-                gsap.set(pendulum, { rotation: rotation });
+                
+                const xPercent = window.innerWidth <= 768 ? 0 : -50;
+                gsap.set(pendulum, { xPercent: xPercent, rotation: rotation });
                 prevX = currentX;
             });
         });
