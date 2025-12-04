@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Stagger Response</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0a0a0a; color: #fff; font-family: sans-serif; overflow-x: hidden; }
+        a { color: inherit; text-decoration: none; }
+
+        section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
+        #hero { height: 100vh; background: radial-gradient(#333, #000); justify-content: center; z-index: 10; }
+        #about { min-height: 50vh; background: #111; padding: 50px; text-align: center; z-index: 10; }
+        footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
+
+        #stage {
+            height: 100vh; width: 100%;
+            background-color: #000;
+            overflow: hidden; 
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .marionette-group {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 2px; height: 100vh;
+            pointer-events: none;
+            will-change: transform, opacity, filter;
+            z-index: 5;
+        }
+
+        .pendulum {
+            position: absolute; top: 0; left: 0;
+            width: auto; 
+            display: flex; flex-direction: column; align-items: center;
+            transform-origin: center top; 
+            transform: translateX(-50%);
+        }
+
+        .string-rack { position: relative; width: 100%; }
+        .string {
+            position: absolute; top: 0; height: 100%; width: 1px; 
+            background: rgba(255, 255, 255, 0.3); 
+        }
+
+        .mockup-wrapper { position: relative; z-index: 2; margin-top: 0; }
+        .mockup-img {
+            display: block; border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            object-fit: contain;
+        }
+        
+        /* PC 기본 사이즈 */
+        .p1 .mockup-img { width: 500px; height: auto; }
+        .p2 .mockup-img { width: 300px; height: auto; }
+        .p3 .mockup-img { width: 400px; height: auto; }
+
+        /* --- 정보 버블 (PC 기본) --- */
+        .info-bubbles {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 900px; height: 600px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 250px;
+            opacity: 0; visibility: hidden;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        a.bubble { pointer-events: auto; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        a.bubble:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-3px); }
+
+        .bubble h3 { font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
+        .bubble p { font-size: 0.9rem; line-height: 1.5; color: #ddd; margin: 0; }
+        
+        /* PC 위치 배치 */
+        .b-top-left { top: 10%; left: 0%; }
+        .b-top-right { top: 10%; right: 0%; text-align: right; }
+        .b-bottom-left { bottom: 15%; left: 5%; }
+        .b-bottom-right { bottom: 15%; right: 5%; }
+
+
+        /* =========================================
+           📱 [핵심] 모바일 반응형 미디어 쿼리 
+           ========================================= */
+        @media (max-width: 768px) {
+            
+            /* 1. 목업 이미지 크기 줄이기 */
+            .p1 .mockup-img { width: 80vw; }
+            .p2 .mockup-img { width: 60vw; }
+            .p3 .mockup-img { width: 70vw; }
+
+            /* 2. 버블 컨테이너 재정의 (목업 아래로 이동) */
+            .info-bubbles {
+                position: relative; /* 절대 위치 해제 */
+                top: auto; left: auto; 
+                transform: none; /* 중앙 정렬 해제 */
+                
+                width: 90vw; /* 모바일 너비 */
+                height: auto; /* 높이 자동 */
+                margin-top: 30px; /* 목업과 간격 */
+                
+                /* 플렉스박스로 세로 정렬 */
+                display: flex;
+                flex-direction: column;
+                gap: 10px; /* 버블 사이 간격 */
+                align-items: center; /* 가운데 정렬 */
+            }
+
+            /* 3. 개별 버블 스타일 변경 (리스트 형태) */
+            .bubble {
+                position: relative; /* 둥둥 떠다니기 해제 */
+                top: auto !important; 
+                left: auto !important; 
+                right: auto !important; 
+                bottom: auto !important;
+                
+                width: 100%; /* 가로 꽉 채우기 */
+                max-width: 100%;
+                text-align: center; /* 텍스트 중앙 */
+            }
+            
+            /* 모바일에서 텍스트 정렬 강제 중앙 */
+            .b-top-right { text-align: center; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <section id="hero"><h1>Mobile Response</h1><p>PC: 주변 4방향<br>Mobile: 하단 리스트 (Stagger)</p></section>
+    
+    <section id="stage">
+        
+        <div class="marionette-group p1">
+            <div class="pendulum">
+                <div class="string-rack" data-height="30vh" data-width="500px"></div>
+                <div class="mockup-wrapper">
+                    <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Web+Project'" alt="Web Project" class="mockup-img">
+                </div>
+                
+                <div class="info-bubbles">
+                    <div class="bubble b-top-left">
+                        <h3>E-Commerce Platform</h3>
+                        <p>쇼핑몰 리뉴얼 프로젝트</p>
+                    </div>
+                    <div class="bubble b-top-right">
+                        <p><strong>Front-end Lead</strong></p>
+                        <p>React, Redux, GSAP</p>
+                    </div>
+                    <a href="#" class="bubble b-bottom-left">📄 기획서 바로가기</a>
+                    <a href="#" class="bubble b-bottom-right">🚀 프로토타입 보기</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="marionette-group p2">
+            <div class="pendulum">
+                <div class="string-rack" data-height="15vh" data-width="300px"></div>
+                <div class="mockup-wrapper">
+                    <img src="https://placehold.co/300x600/222/FFF?text=Mobile+App" alt="Mobile App" class="mockup-img">
+                </div>
+                
+                <div class="info-bubbles">
+                    <div class="bubble b-top-left">
+                        <h3>Fitness Tracker</h3>
+                        <p>개인 맞춤형 운동 코칭 앱</p>
+                    </div>
+                    <div class="bubble b-top-right">
+                        <p><strong>UI/UX Designer</strong></p>
+                        <p>Figma, Protopie</p>
+                    </div>
+                    <a href="#" class="bubble b-bottom-left">📄 기획서 바로가기</a>
+                    <a href="#" class="bubble b-bottom-right">📱 앱 실행해보기</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="marionette-group p3">
+            <div class="pendulum">
+                <div class="string-rack" data-height="25vh" data-width="400px"></div>
+                <div class="mockup-wrapper">
+                    <img src="https://placehold.co/500x500/333/FFF?text=Design" alt="Design Project" class="mockup-img">
+                </div>
+                
+                <div class="info-bubbles">
+                    <div class="bubble b-top-left">
+                        <h3>Interactive Art</h3>
+                        <p>반응형 미디어 아트 전시</p>
+                    </div>
+                    <div class="bubble b-top-right">
+                        <p><strong>Creative Director</strong></p>
+                        <p>TouchDesigner, Unity</p>
+                    </div>
+                    <a href="#" class="bubble b-bottom-left">📄 전시 기획안</a>
+                    <a href="#" class="bubble b-bottom-right">🎨 인터랙션 영상</a>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <footer><p>End</p></footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        function createRandomStrings() {
+            const racks = document.querySelectorAll('.string-rack');
+            racks.forEach(rack => {
+                rack.innerHTML = ''; 
+                // 모바일 대응: 화면 작으면 줄 길이 조금 줄이기
+                const isMobile = window.innerWidth <= 768;
+                const h = isMobile ? parseInt(rack.dataset.height)*0.7 + 'vh' : rack.dataset.height;
+                const w = isMobile ? '80vw' : rack.dataset.width;
+                
+                rack.style.height = h; 
+                rack.style.width = w;
+
+                for (let i = 0; i < 3; i++) {
+                    const string = document.createElement('div');
+                    string.classList.add('string');
+                    string.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+                    const minOp = 0.10; const maxOp = 0.40;
+                    const op = (Math.random() * (maxOp - minOp) + minOp).toFixed(2);
+                    string.style.background = `rgba(255, 255, 255, ${op})`;
+                    string.style.boxShadow = `0 0 ${op * 2}px rgba(255, 255, 255, ${op * 0.3})`;
+                    rack.appendChild(string);
+                }
+            });
+        }
+        createRandomStrings();
+        // 화면 크기 바뀔 때 줄 다시 그리기
+        window.addEventListener('resize', createRandomStrings);
+
+
+        // --- GSAP Animation ---
+        const tl = gsap.timeline({
+            scrollTrigger: { trigger: "#stage", start: "top top", end: "+=8000", pin: true, scrub: 1 }
+        });
+
+        gsap.set(".marionette-group", { autoAlpha: 0 }); 
+        gsap.set(".bubble", { y: 30, autoAlpha: 0 }); // 버블은 아래에서 위로
+
+        // P1
+        tl.set(".p1", { autoAlpha: 1 })
+          .fromTo(".p1", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+          // Stagger 효과는 PC/모바일 상관없이 동일하게 동작 (순차적 등장)
+          .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
+          .to({}, { duration: 3 }) 
+          .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
+          .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
+
+        // P2
+          .set(".p2", { autoAlpha: 1 })
+          .fromTo(".p2", { x: "-35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+          .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
+          .to({}, { duration: 3 })
+          .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
+          .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
+
+        // P3
+          .set(".p3", { autoAlpha: 1 })
+          .fromTo(".p3", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+          .to(".p3 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
+          .to({}, { duration: 3 })
+          .to(".p3 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
+          .to(".p3", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
+
+
+        // 물리 엔진
+        const groups = document.querySelectorAll(".marionette-group");
+        groups.forEach(group => {
+            const pendulum = group.querySelector(".pendulum");
+            let rotation = 0; let velocity = 0; let prevX = null;
+            const CONFIG = { TENSION: 0.05, FRICTION: 0.85, FORCE: 0.04, MAX_ANGLE: 8 };
+
+            gsap.ticker.add(() => {
+                const currentX = group.getBoundingClientRect().left;
+                if (prevX === null || Math.abs(currentX) > 10000) { prevX = currentX; return; }
+                const dx = currentX - prevX;
+                const opacity = window.getComputedStyle(group).opacity;
+                if (Math.abs(dx) < 50 && opacity > 0.1) { 
+                    velocity += dx * CONFIG.FORCE; velocity += -rotation * CONFIG.TENSION; velocity *= CONFIG.FRICTION; rotation += velocity;
+                    if (rotation > CONFIG.MAX_ANGLE) rotation = CONFIG.MAX_ANGLE;
+                    if (rotation < -CONFIG.MAX_ANGLE) rotation = -CONFIG.MAX_ANGLE;
+                    if (Math.abs(rotation) < 0.01 && Math.abs(velocity) < 0.01) { rotation = 0; velocity = 0; }
+                } else { velocity = 0; }
+                gsap.set(pendulum, { rotation: rotation });
+                prevX = currentX;
+            });
+        });
+    </script>
+</body>
+</html>
