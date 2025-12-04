@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Stagger Response</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bubble Height Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
@@ -31,6 +31,7 @@
             pointer-events: none;
             will-change: transform, opacity, filter;
             z-index: 5;
+            opacity: 0; visibility: hidden; 
         }
 
         .pendulum {
@@ -54,19 +55,17 @@
             object-fit: contain;
         }
         
-        /* PC 기본 사이즈 */
         .p1 .mockup-img { width: 500px; height: auto; }
         .p2 .mockup-img { width: 300px; height: auto; }
         .p3 .mockup-img { width: 400px; height: auto; }
 
-        /* --- 정보 버블 (PC 기본) --- */
+        /* PC 버블 */
         .info-bubbles {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 900px; height: 600px;
-            pointer-events: none;
-            z-index: 10;
+            width: 90vw; max-width: 1000px; height: 600px;
+            pointer-events: none; z-index: 10;
         }
 
         .bubble {
@@ -82,68 +81,64 @@
             transition: transform 0.3s ease, background 0.3s ease;
         }
 
+        /* 3,4번째 버튼 (PC) */
         a.bubble { pointer-events: auto; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
         a.bubble:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-3px); }
-
         .bubble h3 { font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
         .bubble p { font-size: 0.9rem; line-height: 1.5; color: #ddd; margin: 0; }
         
-        /* PC 위치 배치 */
-        .b-top-left { top: 10%; left: 0%; }
-        .b-top-right { top: 10%; right: 0%; text-align: right; }
-        .b-bottom-left { bottom: 15%; left: 5%; }
-        .b-bottom-right { bottom: 15%; right: 5%; }
+        .b-top-left { top: 10%; left: 0; }
+        .b-top-right { top: 10%; right: 0; text-align: right; }
+        .b-bottom-left { bottom: 15%; left: 20px; }
+        .b-bottom-right { bottom: 15%; right: 20px; }
 
 
-        /* =========================================
-           📱 [핵심] 모바일 반응형 미디어 쿼리 
-           ========================================= */
         @media (max-width: 768px) {
-            
-            /* 1. 목업 이미지 크기 줄이기 */
-            .p1 .mockup-img { width: 80vw; }
-            .p2 .mockup-img { width: 60vw; }
-            .p3 .mockup-img { width: 70vw; }
+            .pendulum {
+                height: 100%; top: 0; justify-content: center; gap: 20px; padding-bottom: 50px;
+            }
 
-            /* 2. 버블 컨테이너 재정의 (목업 아래로 이동) */
             .info-bubbles {
-                position: relative; /* 절대 위치 해제 */
-                top: auto; left: auto; 
-                transform: none; /* 중앙 정렬 해제 */
-                
-                width: 90vw; /* 모바일 너비 */
-                height: auto; /* 높이 자동 */
-                margin-top: 30px; /* 목업과 간격 */
-                
-                /* 플렉스박스로 세로 정렬 */
-                display: flex;
-                flex-direction: column;
-                gap: 10px; /* 버블 사이 간격 */
-                align-items: center; /* 가운데 정렬 */
+                position: relative; top: auto; left: auto; transform: none;
+                width: 90vw; height: auto; margin-top: 0;
+                display: flex; flex-direction: column; gap: 8px; align-items: center;
+                flex-shrink: 0; 
             }
 
-            /* 3. 개별 버블 스타일 변경 (리스트 형태) */
             .bubble {
-                position: relative; /* 둥둥 떠다니기 해제 */
-                top: auto !important; 
-                left: auto !important; 
-                right: auto !important; 
-                bottom: auto !important;
-                
-                width: 100%; /* 가로 꽉 채우기 */
-                max-width: 100%;
-                text-align: center; /* 텍스트 중앙 */
+                position: relative; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+                width: 100%; max-width: 100%; text-align: center; padding: 12px 15px;
+            }
+            .b-top-right { text-align: center; }
+
+            /* --- [핵심 수정] 2번째, 3번째, 4번째 버블 높이 통일 --- */
+            /* :nth-child(n+2) -> 2번째 요소부터 끝까지 적용 */
+            .info-bubbles .bubble:nth-child(n+2) {
+                display: flex;             /* 플렉스 박스로 변경 */
+                align-items: center;       /* 수직 중앙 정렬 */
+                justify-content: center;   /* 수평 중앙 정렬 */
+                min-height: 52px;          /* 최소 높이 강제 (버튼 크기 통일) */
+                padding: 0 15px;           /* 패딩 통일 */
+            }
+
+            .mockup-wrapper {
+                flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
+                min-height: 30vh; 
+            }
+
+            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img {
+                width: 100%; height: 100%; max-width: 85vw; object-fit: contain; 
             }
             
-            /* 모바일에서 텍스트 정렬 강제 중앙 */
-            .b-top-right { text-align: center; }
+            .string-rack { position: absolute; top: 0; z-index: 0; opacity: 0.5; }
+            .p1 .string-rack, .p2 .string-rack, .p3 .string-rack { height: 50% !important; }
         }
 
     </style>
 </head>
 <body>
 
-    <section id="hero"><h1>Mobile Response</h1><p>PC: 주변 4방향<br>Mobile: 하단 리스트 (Stagger)</p></section>
+    <section id="hero"><h1>Uniform Height</h1><p>모바일에서 2,3,4번 버블의<br>높이를 똑같이 맞췄습니다.</p></section>
     
     <section id="stage">
         
@@ -153,18 +148,16 @@
                 <div class="mockup-wrapper">
                     <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Web+Project'" alt="Web Project" class="mockup-img">
                 </div>
-                
                 <div class="info-bubbles">
                     <div class="bubble b-top-left">
                         <h3>E-Commerce Platform</h3>
                         <p>쇼핑몰 리뉴얼 프로젝트</p>
                     </div>
                     <div class="bubble b-top-right">
-                        <p><strong>Front-end Lead</strong></p>
-                        <p>React, Redux, GSAP</p>
+                        <p><strong>Front-end Lead</strong> / React</p>
                     </div>
-                    <a href="#" class="bubble b-bottom-left">📄 기획서 바로가기</a>
-                    <a href="#" class="bubble b-bottom-right">🚀 프로토타입 보기</a>
+                    <a href="#" class="bubble b-bottom-left" style="background: rgba(255,255,255,0.15);">📄 기획서 바로가기</a>
+                    <a href="#" class="bubble b-bottom-right" style="background: rgba(255,255,255,0.15);">🚀 프로토타입 보기</a>
                 </div>
             </div>
         </div>
@@ -175,15 +168,13 @@
                 <div class="mockup-wrapper">
                     <img src="https://placehold.co/300x600/222/FFF?text=Mobile+App" alt="Mobile App" class="mockup-img">
                 </div>
-                
                 <div class="info-bubbles">
                     <div class="bubble b-top-left">
                         <h3>Fitness Tracker</h3>
-                        <p>개인 맞춤형 운동 코칭 앱</p>
+                        <p>운동 코칭 앱</p>
                     </div>
                     <div class="bubble b-top-right">
-                        <p><strong>UI/UX Designer</strong></p>
-                        <p>Figma, Protopie</p>
+                        <p><strong>UI/UX Designer</strong> / Figma</p>
                     </div>
                     <a href="#" class="bubble b-bottom-left">📄 기획서 바로가기</a>
                     <a href="#" class="bubble b-bottom-right">📱 앱 실행해보기</a>
@@ -197,15 +188,13 @@
                 <div class="mockup-wrapper">
                     <img src="https://placehold.co/500x500/333/FFF?text=Design" alt="Design Project" class="mockup-img">
                 </div>
-                
                 <div class="info-bubbles">
                     <div class="bubble b-top-left">
                         <h3>Interactive Art</h3>
-                        <p>반응형 미디어 아트 전시</p>
+                        <p>미디어 아트 전시</p>
                     </div>
                     <div class="bubble b-top-right">
                         <p><strong>Creative Director</strong></p>
-                        <p>TouchDesigner, Unity</p>
                     </div>
                     <a href="#" class="bubble b-bottom-left">📄 전시 기획안</a>
                     <a href="#" class="bubble b-bottom-right">🎨 인터랙션 영상</a>
@@ -220,70 +209,59 @@
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        function createRandomStrings() {
+        function createBalancedStrings() {
             const racks = document.querySelectorAll('.string-rack');
+            const zones = [{ min: 5, max: 20 }, { min: 30, max: 45 }, { min: 55, max: 70 }, { min: 80, max: 95 }];
+
             racks.forEach(rack => {
                 rack.innerHTML = ''; 
-                // 모바일 대응: 화면 작으면 줄 길이 조금 줄이기
                 const isMobile = window.innerWidth <= 768;
-                const h = isMobile ? parseInt(rack.dataset.height)*0.7 + 'vh' : rack.dataset.height;
-                const w = isMobile ? '80vw' : rack.dataset.width;
-                
-                rack.style.height = h; 
+                if (!isMobile) { rack.style.height = rack.dataset.height; }
+                const w = isMobile ? '70vw' : rack.dataset.width;
                 rack.style.width = w;
 
-                for (let i = 0; i < 3; i++) {
+                zones.forEach(zone => {
                     const string = document.createElement('div');
                     string.classList.add('string');
-                    string.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+                    const randomLeft = Math.floor(Math.random() * (zone.max - zone.min + 1)) + zone.min;
+                    string.style.left = `${randomLeft}%`;
                     const minOp = 0.10; const maxOp = 0.40;
                     const op = (Math.random() * (maxOp - minOp) + minOp).toFixed(2);
                     string.style.background = `rgba(255, 255, 255, ${op})`;
                     string.style.boxShadow = `0 0 ${op * 2}px rgba(255, 255, 255, ${op * 0.3})`;
                     rack.appendChild(string);
-                }
+                });
             });
         }
-        createRandomStrings();
-        // 화면 크기 바뀔 때 줄 다시 그리기
-        window.addEventListener('resize', createRandomStrings);
+        createBalancedStrings();
+        window.addEventListener('resize', createBalancedStrings);
 
 
-        // --- GSAP Animation ---
         const tl = gsap.timeline({
             scrollTrigger: { trigger: "#stage", start: "top top", end: "+=8000", pin: true, scrub: 1 }
         });
 
-        gsap.set(".marionette-group", { autoAlpha: 0 }); 
-        gsap.set(".bubble", { y: 30, autoAlpha: 0 }); // 버블은 아래에서 위로
+        gsap.set(".bubble", { y: 30, autoAlpha: 0 }); 
 
         // P1
-        tl.set(".p1", { autoAlpha: 1 })
-          .fromTo(".p1", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
-          // Stagger 효과는 PC/모바일 상관없이 동일하게 동작 (순차적 등장)
+        tl.fromTo(".p1", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 }) 
           .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-
         // P2
-          .set(".p2", { autoAlpha: 1 })
           .fromTo(".p2", { x: "-35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 })
           .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-
         // P3
-          .set(".p3", { autoAlpha: 1 })
           .fromTo(".p3", { x: "35vw", scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
           .to(".p3 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 })
           .to(".p3 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
           .to(".p3", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
 
-
-        // 물리 엔진
         const groups = document.querySelectorAll(".marionette-group");
         groups.forEach(group => {
             const pendulum = group.querySelector(".pendulum");
