@@ -91,7 +91,7 @@
         
         .p1 .mockup-img { width: 500px; height: auto; }
         .p2 .mockup-img { width: 300px; height: auto; }
-        .p3 .mockup-img { width: 400px; height: auto; }
+        .p3 .mockup-img { width: 500px; height: auto; }
 
         .info-bubbles { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 1000px; height: 600px; pointer-events: none; z-index: 10; }
         .bubble { position: absolute; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 250px; opacity: 0; visibility: hidden; transition: transform 0.3s ease, background 0.3s ease; }
@@ -126,7 +126,7 @@
             .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 15px; }
 
             .mockup-wrapper { flex: 0 1 auto; display: flex; align-items: flex-start; justify-content: center; width: 100%; margin-top: 15vh; }
-            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { width: auto; max-width: 85vw; max-height: 45vh; object-fit: contain; }
+            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { width: auto; max-width: 85vw; max-height: 55vh; object-fit: contain; }
             
             .string-rack { position: absolute; top: 0; z-index: 0; opacity: 0.5; height: 40vh !important; }
         }
@@ -243,7 +243,7 @@
                 const isMobile = window.innerWidth <= 768;
                 let w = rack.dataset.width; 
                 if (isMobile) { rack.style.maxWidth = '90vw'; } 
-                else { rack.maxWidth = 'none'; rack.style.height = rack.dataset.height; }
+                else { rack.style.maxWidth = 'none'; rack.style.height = rack.dataset.height; }
                 rack.style.width = w;
 
                 zones.forEach(zone => {
@@ -305,7 +305,7 @@
             const pendulum = group.querySelector(".pendulum");
             let rotation = 0; let velocity = 0; let prevX = null;
             
-            // [최종 안정화 설정값 적용] - 절대 수정 금지 요청 반영
+            // [최종 안정화 설정값 적용]
             const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 }; 
 
             gsap.ticker.add(() => {
@@ -325,28 +325,6 @@
                 gsap.set(pendulum, { xPercent: xPercent, rotation: rotation });
                 prevX = currentX;
             });
-        });
-
-        // [Archive Item - Repeatable Fade-in/Slide-up]
-        // *****************************************************************
-        // * 모바일 호환성 및 반복 재생 안정성을 위해 gsap.set과 gsap.to로 변경 *
-        // *****************************************************************
-        // 1. 초기 상태를 강제로 설정하여, 스크롤 전 아카이브 아이템이 숨겨지도록 보장합니다.
-        gsap.set(".archive-item", { opacity: 0, y: 30 });
-
-        // 2. 초기 상태에서 최종 상태로 애니메이션을 실행합니다.
-        gsap.to(".archive-item", {
-            scrollTrigger: {
-                trigger: "#archive",
-                start: "top 80%",    // 섹션 상단이 화면의 80% 지점에 닿을 때 시작 (화면 하단에서 좀 더 여유 있게)
-                end: "bottom top",
-                toggleActions: "play reverse play reverse", // 스크롤을 위/아래로 해도 반복 재생
-            },
-            opacity: 1,
-            y: 0, 
-            stagger: 0.07, 
-            duration: 0.8,
-            ease: "power2.out"
         });
     </script>
 </body>
