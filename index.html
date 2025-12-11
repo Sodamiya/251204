@@ -15,30 +15,131 @@
 
         section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
         
-        /* 모바일 주소창 대응: 100svh 유지 */
         #hero { 
             height: 100svh; 
             background: radial-gradient(#333, #000); 
             justify-content: center; 
             z-index: 10; 
         }
-        #about { min-height: 50vh; background: #111; padding: 50px; text-align: center; z-index: 10; }
+
+        /* -------------------------------------------
+           About Me 섹션 스타일
+           ------------------------------------------- */
+        #about { 
+            height: 100svh; 
+            width: 100%;
+            background: #111; 
+            position: relative; 
+            overflow: hidden; 
+            z-index: 15; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        /* 배경 */
+        .about-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            opacity: 0.3; 
+        }
+        .about-bg img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 콘텐츠 래퍼 */
+        .about-content {
+            position: relative; z-index: 2;
+            width: 90%; max-width: 1200px; height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem; 
+        }
+
+        /* 왼쪽: 사진 영역 */
+        .about-photo {
+            flex: 1;
+            height: 100%;
+            max-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            opacity: 0;
+            transform: translateX(-50px); 
+            transition: all 1s ease;
+        }
+        .about-photo img {
+            width: 100%; height: 100%; object-fit: cover; 
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* 오른쪽: 텍스트 영역 */
+        .about-text {
+            flex: 1;
+            text-align: left;
+            
+            opacity: 0;
+            transform: translateX(50px); 
+            transition: all 1s ease 0.2s; 
+        }
+        .about-text h2 { font-size: 3rem; margin-bottom: 1.5rem; font-weight: bold; color: #fff; }
+        .about-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 1rem; }
+
+        /* [활성화 상태] */
+        .about-content.is-active .about-photo,
+        .about-content.is-active .about-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* -------------------------------------------
+           📱 모바일 스타일 (About)
+           ------------------------------------------- */
+        @media (max-width: 768px) {
+            .about-content {
+                flex-direction: column; 
+                gap: 2rem;
+                height: auto;
+                padding: 50px 0;
+            }
+
+            .about-photo {
+                width: 100%;
+                height: 40vh; 
+                transform: translateY(-30px); 
+            }
+
+            .about-text {
+                width: 100%;
+                text-align: center; 
+                transform: translateY(30px); 
+                padding: 0 1rem;
+            }
+            .about-text h2 { font-size: 2rem; margin-bottom: 1rem; }
+            .about-text p { font-size: 0.95rem; line-height: 1.6; }
+
+            .about-content.is-active .about-photo,
+            .about-content.is-active .about-text {
+                transform: translateY(0);
+            }
+        }
+
 
         /* 프로젝트 스테이지 (Pinned) */
         #stage {
-            height: 100svh; /* iOS Safari 대응 */
+            height: 100svh; 
             width: 100%;
             background-color: #000;
             overflow: hidden; 
             position: relative;
             perspective: 1000px;
-            /* [수정됨] z-index 명시: 겹침 문제 방지를 위해 갤러리와 동일하거나 관리된 레벨 부여 */
             z-index: 15; 
         }
 
         /* 갤러리 섹션 */
         #gallery-stage {
-            height: 100svh; /* iOS Safari 대응 */
+            height: 100svh; 
             width: 100%;
             position: relative;
             overflow: hidden;
@@ -88,11 +189,9 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; 
             will-change: transform, opacity;
 
-            /* [수정됨] 초기 상태에서는 클릭/호버 등 모든 상호작용 차단 */
             pointer-events: none;
         }
         
-        /* [추가됨] 애니메이션이 끝난 후 JS로 붙여줄 클래스: 상호작용 활성화 */
         .word-item.interaction-ready {
             pointer-events: auto;
         }
@@ -173,9 +272,11 @@
         .mockup-wrapper { position: relative; z-index: 2; margin-top: 0; }
         .mockup-img { display: block; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); object-fit: contain; }
         
-        .p1 .mockup-img { width: 500px; height: auto; }
-        .p2 .mockup-img { width: 300px; height: auto; }
+        /* [수정됨] p1과 p3의 이미지 크기를 500px로 통일 */
+        .p1 .mockup-img,
         .p3 .mockup-img { width: 500px; height: auto; }
+        
+        .p2 .mockup-img { width: 300px; height: auto; }
 
         .info-bubbles { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 1000px; height: 600px; pointer-events: none; z-index: 10; }
         .bubble { position: absolute; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 250px; opacity: 0; visibility: hidden; transition: transform 0.3s ease, background 0.3s ease; }
@@ -277,10 +378,36 @@
 <body>
 
     <section id="hero"><h1>Final Build</h1><p>마리오네트 & 인터랙티브 갤러리</p></section>
-    <section id="about"><h2>About Me</h2><p>마리오네트 컨셉 소개 및 자기소개</p></section>
+    
+    <!-- About Me 섹션 -->
+    <section id="about">
+        <div class="about-bg">
+            <img src="https://placehold.co/1920x1080/000/333?text=About+BG" alt="Background">
+        </div>
+        <div class="about-content">
+            <div class="about-photo">
+                <img src="/img/about.JPG" alt="Profile">
+            </div>
+            <div class="about-text">
+                <h2>About Me</h2>
+                <p>
+                    안녕하세요. 인터랙티브 웹 개발자입니다.<br>
+                    사용자에게 새로운 경험을 전달하는 것을 목표로 합니다.<br>
+                    창의적인 비주얼과 견고한 기술력을 바탕으로<br>
+                    웹의 가능성을 확장해 나가고 있습니다.
+                </p>
+                <p>
+                    HTML, CSS, GSAP를 활용한 애니메이션 구현과<br>
+                    React 기반의 모던 웹 애플리케이션 개발에<br>
+                    강점을 가지고 있습니다.
+                </p>
+            </div>
+        </div>
+    </section>
     
     <section id="stage">
         
+        <!-- P1 (500px) -->
         <div class="marionette-group p1">
             <div class="pendulum">
                 <div class="string-rack" data-height="30vh" data-width="500px"></div>
@@ -296,6 +423,7 @@
             </div>
         </div>
 
+        <!-- P2 (300px) -->
         <div class="marionette-group p2">
             <div class="pendulum">
                 <div class="string-rack" data-height="15vh" data-width="300px"></div>
@@ -311,11 +439,13 @@
             </div>
         </div>
 
+        <!-- [수정됨] P3 (400px -> 500px) -->
         <div class="marionette-group p3">
             <div class="pendulum">
-                <div class="string-rack" data-height="25vh" data-width="400px"></div>
+                <!-- data-width를 500px로 변경하여 p1과 줄 너비 통일 -->
+                <div class="string-rack" data-height="25vh" data-width="500px"></div>
                 <div class="mockup-wrapper">
-                    <img src="https://placehold.co/500x500/333/FFF?text=Design" alt="Design Project" class="mockup-img">
+                    <img src="/img/mockup3.png" alt="Design Project" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
                     <div class="bubble b-top-left"><h3>Interactive Art</h3><p>미디어 아트 전시</p></div>
@@ -396,11 +526,21 @@
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        // [iOS/모바일 주소창 리사이즈 튀는 현상 방지]
         ScrollTrigger.normalizeScroll(true); 
         ScrollTrigger.config({ ignoreMobileResize: true });
 
-        // --- 1. 마리오네트 로직 (기존) ---
+        // About 섹션 스크롤 트리거
+        ScrollTrigger.create({
+            trigger: "#about",
+            start: "top top",
+            end: "+=1000", 
+            pin: true,
+            scrub: true,
+            onEnter: () => document.querySelector('.about-content').classList.add('is-active'),
+            onLeaveBack: () => document.querySelector('.about-content').classList.remove('is-active')
+        });
+
+        // --- 1. 마리오네트 로직 ---
         function createBalancedStrings() {
             const racks = document.querySelectorAll('.string-rack');
             const zones = [{ min: 5, max: 20 }, { min: 30, max: 45 }, { min: 55, max: 70 }, { min: 80, max: 95 }];
@@ -436,7 +576,7 @@
         window.addEventListener('resize', () => { createBalancedStrings(); });
 
 
-        // --- 2. 마리오네트 타임라인 (기존 유지) ---
+        // --- 2. 마리오네트 타임라인 ---
         const tl = gsap.timeline({
             scrollTrigger: { trigger: "#stage", start: "top top", end: "+=8000", pin: true, scrub: 1 }
         });
@@ -467,7 +607,7 @@
           .to(".p3", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
 
 
-        // --- 3. 물리 엔진 (Ticker) (기존 유지) ---
+        // --- 3. 물리 엔진 (Ticker) ---
         const groups = document.querySelectorAll(".marionette-group");
         const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 }; 
 
@@ -495,33 +635,29 @@
         });
 
 
-        // --- 4. 갤러리 섹션 로직 (CSS Transition + ScrollTrigger Class Toggling) ---
-        
+        // --- 4. 갤러리 섹션 로직 ---
         const items = document.querySelectorAll(".word-item");
-        const STAGGER_AMOUNT = 0.08; // 아이템 간 시차 (초)
-        let interactionTimer; // [추가됨] 타이머 변수
+        const STAGGER_AMOUNT = 0.08; 
+        let interactionTimer; 
 
         items.forEach((item, index) => {
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
         
-        // (1) 배경 고정 (Pin) - 수정된 부분
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top top",
-            end: "+=1500", // [수정됨] 4000 -> 1500으로 단축
+            end: "+=1500", 
             pin: true,
             scrub: true 
         });
 
-        // (2) 애니메이션 트리거 (기존 유지 + 인터렉션 제어 추가)
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top 60%", 
             onEnter: () => {
                 items.forEach(item => item.classList.add('is-active'));
                 
-                // [추가됨] 2초 뒤에 상호작용 활성화 (애니메이션 1.2s + stagger 0.8s = 약 2s)
                 clearTimeout(interactionTimer);
                 interactionTimer = setTimeout(() => {
                     items.forEach(item => item.classList.add('interaction-ready'));
@@ -537,7 +673,7 @@
             toggleActions: "play none none reverse"
         });
 
-        // (3) 모달 및 배경 로직 (기존 유지)
+        // (3) 모달 및 배경 로직
         const galleryBgImg = document.getElementById("bg-img");
         const modal = document.getElementById('image-modal');
         const modalContentWrapper = document.getElementById('modal-content-wrapper');
