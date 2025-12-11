@@ -54,7 +54,7 @@
             background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
         }
 
-        /* 텍스트 리스트 (데스크톱 기본: 5열) */
+        /* 텍스트 리스트 */
         .gallery-content {
             position: relative; z-index: 2; display: grid; 
             grid-template-columns: repeat(5, 1fr); 
@@ -63,9 +63,7 @@
             width: 100%;
         }
 
-        /* -------------------------------------------
-           [썸네일/피드 스타일 적용 - CSS Transition 기반으로 변경]
-           ------------------------------------------- */
+        /* 썸네일/피드 스타일 */
         .word-item {
             cursor: pointer;
             background-color: #1a1a1a; 
@@ -76,29 +74,20 @@
             position: relative;
             text-align: center;
             
-            /* [초기 상태 설정] */
             opacity: 0; 
             transform: translateY(100px) scale(0.9);
             
-            /* 호버 효과는 그대로 유지 */
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; 
-            
-            /* 성능 최적화 힌트 */
             will-change: transform, opacity;
         }
         
-        /* [활성화 상태 - 애니메이션 최종 상태] */
         .word-item.is-active {
             opacity: 1;
             transform: translateY(0) scale(1);
-            
-            /* CSS Transition 정의: y, opacity, scale에 대해 1.2초 동안 애니메이션 */
             transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1), 
                         opacity 1.2s ease-out, 
                         box-shadow 0.3s ease, 
                         border-color 0.3s ease;
-            
-            /* JS에서 계산된 개별 지연 시간 적용 (stagger 효과) */
             transition-delay: var(--item-delay);
         }
         
@@ -136,20 +125,9 @@
             text-overflow: ellipsis;
         }
         
-        /* 모달 애니메이션 스타일 */
-        .modal-enter {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        .modal-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-        }
+        .modal-enter { opacity: 0; transform: scale(0.9); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
 
-        /* -------------------------------------------
-           [반응형 갤러리 조정]
-           ------------------------------------------- */
         @media (max-width: 1024px) {
             .gallery-content { grid-template-columns: repeat(4, 1fr); }
             .thumbnail-caption { font-size: 0.9rem; }
@@ -163,11 +141,10 @@
             .thumbnail-caption { font-size: 0.7rem; padding: 0.3rem; }
         }
 
-
         footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
 
         /* -------------------------------------------
-           Marionette & Bubble Styles (기존 코드)
+           Marionette & Bubble Styles
            ------------------------------------------- */
         .marionette-group {
             position: absolute; top: 0; left: 50%; width: 2px; height: 100vh; pointer-events: none; will-change: transform, opacity, filter; z-index: 5; opacity: 0; visibility: hidden; 
@@ -198,22 +175,89 @@
 
 
         /* -------------------------------------------
-           📱 모바일 스타일 오버라이드
+           📱 모바일 스타일 오버라이드 
+           - 이미지와 버튼을 분리하여 절대 위치로 고정합니다.
            ------------------------------------------- */
         @media (max-width: 768px) {
             .marionette-group {
-                position: absolute; left: 0; top: 0; width: 100%; height: 100vh;
-                display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-                padding-bottom: 50px;
+                /* 그룹 전체를 화면 꽉 차게 설정하여 기준점을 잡습니다 */
+                position: absolute; left: 0; top: 0; 
+                width: 100% !important; 
+                height: 100vh;
+                padding: 0;
             }
-            .pendulum { position: relative; top: auto; left: auto; width: 100%; height: auto; display: flex; flex-direction: column; align-items: center; }
-            .info-bubbles { position: relative; transform: none; top: auto; left: auto; width: 90vw; height: auto; margin-top: -20px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 8px; align-items: center; flex-shrink: 0; }
-            .bubble { position: relative; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; width: 100%; max-width: 100%; text-align: center; padding: 12px 15px; }
+
+            .pendulum { 
+                /* 펜듈럼도 화면 전체 크기로 확장 */
+                position: relative; 
+                width: 100%; 
+                height: 100%; 
+                display: block; /* Flex 해제 */
+            }
+
+            /* 1. 이미지를 화면 상단 영역에 고정 (absolute) */
+            .mockup-wrapper { 
+                position: absolute;
+                top: 20%; /* 화면 상단에서 20% 지점에 위치 */
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-top: 0;
+                z-index: 5;
+            }
+
+            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { 
+                width: auto; 
+                max-width: 80vw; 
+                max-height: 40vh; /* 이미지가 너무 커지지 않도록 제한 */
+                object-fit: contain; 
+            }
+
+            /* 2. 버튼/텍스트 박스를 화면 하단 영역에 고정 (absolute) */
+            .info-bubbles { 
+                position: absolute; 
+                top: auto !important; /* 기존 top 값 무시 */
+                bottom: 15% !important; /* 화면 바닥에서 15% 위로 고정 */
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                
+                width: 90vw; 
+                height: auto; 
+                margin: 0;
+                padding: 0;
+                
+                display: flex; 
+                flex-direction: column; 
+                gap: 10px; 
+                align-items: center; 
+                z-index: 10;
+            }
+
+            .bubble { 
+                /* 개별 버블 위치 초기화하고 flex 아이템으로 배치 */
+                position: relative !important; 
+                top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; 
+                width: 100%; 
+                max-width: 320px; 
+                text-align: center; 
+                padding: 12px 15px; 
+            }
+            
             .b-top-right { text-align: center; }
-            .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 15px; }
-            .mockup-wrapper { flex: 0 1 auto; display: flex; align-items: flex-start; justify-content: center; width: 100%; margin-top: 15vh; }
-            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { width: auto; max-width: 85vw; max-height: 55vh; object-fit: contain; }
-            .string-rack { position: absolute; top: 0; z-index: 0; opacity: 0.5; height: 40vh !important; }
+            .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 50px; }
+
+            /* 줄(String) 위치 조정 */
+            .string-rack { 
+                position: absolute; 
+                top: 0; 
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 0; 
+                opacity: 0.5; 
+                height: 50vh !important; /* 줄 길이를 이미지 근처까지 오도록 조정 */
+            }
         }
 
     </style>
@@ -348,10 +392,17 @@
             racks.forEach(rack => {
                 rack.innerHTML = ''; 
                 const isMobile = window.innerWidth <= 768;
-                let w = rack.dataset.width; 
-                if (isMobile) { rack.style.maxWidth = '90vw'; } 
-                else { rack.style.maxWidth = 'none'; rack.style.height = rack.dataset.height; }
-                rack.style.width = w;
+                
+                if (isMobile) {
+                    // [수정됨] 모바일: 화면 가로의 30% 영역에만 실이 생기도록 너비 강제 조정
+                    rack.style.width = '30vw'; 
+                    rack.style.maxWidth = 'none';
+                } else {
+                    // 데스크톱: data-width 속성값 사용
+                    rack.style.width = rack.dataset.width; 
+                    rack.style.maxWidth = 'none'; 
+                    rack.style.height = rack.dataset.height; 
+                }
 
                 zones.forEach(zone => {
                     const string = document.createElement('div');
