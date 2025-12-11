@@ -87,6 +87,14 @@
             
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; 
             will-change: transform, opacity;
+
+            /* [수정됨] 초기 상태에서는 클릭/호버 등 모든 상호작용 차단 */
+            pointer-events: none;
+        }
+        
+        /* [추가됨] 애니메이션이 끝난 후 JS로 붙여줄 클래스: 상호작용 활성화 */
+        .word-item.interaction-ready {
+            pointer-events: auto;
         }
         
         .word-item.is-active {
@@ -491,6 +499,7 @@
         
         const items = document.querySelectorAll(".word-item");
         const STAGGER_AMOUNT = 0.08; // 아이템 간 시차 (초)
+        let interactionTimer; // [추가됨] 타이머 변수
 
         items.forEach((item, index) => {
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
@@ -500,17 +509,31 @@
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top top",
-            end: "+=1500", // [수정됨] 1200 -> 4000 (약 3~4배 길게 설정하여 휠 여러 번 굴려야 넘어가도록 변경)
+            end: "+=1500", // [수정됨] 4000 -> 1500으로 단축
             pin: true,
             scrub: true 
         });
 
-        // (2) 애니메이션 트리거 (기존 유지)
+        // (2) 애니메이션 트리거 (기존 유지 + 인터렉션 제어 추가)
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top 60%", 
-            onEnter: () => items.forEach(item => item.classList.add('is-active')),
-            onLeaveBack: () => items.forEach(item => item.classList.remove('is-active')),
+            onEnter: () => {
+                items.forEach(item => item.classList.add('is-active'));
+                
+                // [추가됨] 2초 뒤에 상호작용 활성화 (애니메이션 1.2s + stagger 0.8s = 약 2s)
+                clearTimeout(interactionTimer);
+                interactionTimer = setTimeout(() => {
+                    items.forEach(item => item.classList.add('interaction-ready'));
+                }, 2000);
+            },
+            onLeaveBack: () => {
+                items.forEach(item => {
+                    item.classList.remove('is-active');
+                    item.classList.remove('interaction-ready');
+                });
+                clearTimeout(interactionTimer);
+            },
             toggleActions: "play none none reverse"
         });
 
