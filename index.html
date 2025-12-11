@@ -256,6 +256,101 @@
             .thumbnail-caption { font-size: 0.7rem; padding: 0.3rem; }
         }
 
+        /* -------------------------------------------
+           보너스 섹션 스타일
+           ------------------------------------------- */
+        #bonus {
+            width: 100%;
+            min-height: 60vh; 
+            background-color: #0f0f0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px;
+            z-index: 25;
+            position: relative;
+        }
+
+        .bonus-content {
+            width: 90%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            text-align: center; /* 전체 텍스트 중앙 정렬 */
+        }
+
+        .bonus-left {
+            width: 100%;
+        }
+
+        .bonus-left h2 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #fff;
+            letter-spacing: -0.02em;
+            word-break: keep-all; 
+        }
+
+        .bonus-right {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .bonus-right img {
+            max-width: 450px;
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            transition: transform 0.3s ease;
+        }
+        .bonus-right img:hover {
+            transform: translateY(-5px);
+        }
+
+        .bonus-btn {
+            display: inline-block;
+            padding: 18px 45px;
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+        .bonus-btn:hover {
+            transform: scale(1.05);
+            background: #f0f0f0;
+            box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+        }
+
+        /* 📱 모바일 대응 (보너스 섹션) */
+        @media (max-width: 768px) {
+            #bonus {
+                padding: 60px 20px;
+            }
+            .bonus-left h2 {
+                font-size: 2.2rem;
+            }
+            .bonus-right img {
+                max-width: 80%;
+            }
+            .bonus-btn {
+                padding: 15px 35px;
+                font-size: 1rem;
+            }
+        }
+
+
         footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
 
         /* -------------------------------------------
@@ -272,10 +367,7 @@
         .mockup-wrapper { position: relative; z-index: 2; margin-top: 0; }
         .mockup-img { display: block; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); object-fit: contain; }
         
-        /* [수정됨] p1과 p3의 이미지 크기를 500px로 통일 */
-        .p1 .mockup-img,
-        .p3 .mockup-img { width: 500px; height: auto; }
-        
+        .p1 .mockup-img { width: 500px; height: auto; }
         .p2 .mockup-img { width: 300px; height: auto; }
 
         .info-bubbles { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 1000px; height: 600px; pointer-events: none; z-index: 10; }
@@ -322,7 +414,7 @@
                 z-index: 5;
             }
 
-            .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { 
+            .p1 .mockup-img, .p2 .mockup-img { 
                 width: auto; 
                 max-width: 80vw; 
                 max-height: 40vh; 
@@ -439,23 +531,6 @@
             </div>
         </div>
 
-        <!-- [수정됨] P3 (400px -> 500px) -->
-        <div class="marionette-group p3">
-            <div class="pendulum">
-                <!-- data-width를 500px로 변경하여 p1과 줄 너비 통일 -->
-                <div class="string-rack" data-height="25vh" data-width="500px"></div>
-                <div class="mockup-wrapper">
-                    <img src="/img/mockup3.png" alt="Design Project" class="mockup-img">
-                </div>
-                <div class="info-bubbles">
-                    <div class="bubble b-top-left"><h3>Interactive Art</h3><p>미디어 아트 전시</p></div>
-                    <div class="bubble b-top-right"><p><strong>Creative Director</strong></p></div>
-                    <a href="#" class="bubble b-bottom-left">전시 기획안</a>
-                    <a href="#" class="bubble b-bottom-right">인터랙션 영상</a>
-                </div>
-            </div>
-        </div>
-
     </section>
 
     <section id="gallery-stage">
@@ -504,6 +579,19 @@
             <div class="word-item" data-type="image" data-src="/img/p10.jpg">
                 <img src="/img/p10.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img10'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- [수정됨] 보너스 섹션 (이미지 주소 및 링크 업데이트) -->
+    <section id="bonus">
+        <div class="bonus-content">
+            <div class="bonus-left">
+                <h2>예비 집사 모의 고사</h2>
+            </div>
+            <div class="bonus-right">
+                <img src="/img/test.png" alt="예비집사능력고사">
+                <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">테스트 하러가기</a>
             </div>
         </div>
     </section>
@@ -576,9 +664,10 @@
         window.addEventListener('resize', () => { createBalancedStrings(); });
 
 
-        // --- 2. 마리오네트 타임라인 ---
+        // --- 2. 마리오네트 타임라인 (수정됨: P3 관련 애니메이션 제거 및 길이 조정) ---
         const tl = gsap.timeline({
-            scrollTrigger: { trigger: "#stage", start: "top top", end: "+=8000", pin: true, scrub: 1 }
+            // [수정됨] 프로젝트 하나가 줄어들었으므로 스크롤 길이 단축 (8000 -> 5500)
+            scrollTrigger: { trigger: "#stage", start: "top top", end: "+=5500", pin: true, scrub: 1 }
         });
 
         gsap.set(".marionette-group", { autoAlpha: 0 }); 
@@ -598,13 +687,9 @@
           .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
           .to({}, { duration: 3 })
           .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
-          .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
+          .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
           
-          .fromTo(".p3", { x: startX_Right, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
-          .to(".p3 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
-          .to({}, { duration: 3 })
-          .to(".p3 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
-          .to(".p3", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
+          // [수정됨] P3 애니메이션 삭제됨
 
 
         // --- 3. 물리 엔진 (Ticker) ---
