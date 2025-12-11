@@ -15,10 +15,9 @@
 
         section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
         
-        /* [수정됨] 모바일 주소창 대응을 위해 height를 100vh -> 100svh로 변경 */
+        /* 모바일 주소창 대응: 100svh 유지 */
         #hero { 
-            height: 100vh; 
-            height: 100svh; /* iOS Safari 대응: 주소창이 있어도 잘리지 않는 높이 */
+            height: 100svh; 
             background: radial-gradient(#333, #000); 
             justify-content: center; 
             z-index: 10; 
@@ -26,23 +25,19 @@
         #about { min-height: 50vh; background: #111; padding: 50px; text-align: center; z-index: 10; }
 
         /* 프로젝트 스테이지 (Pinned) */
-        /* [수정됨] 모바일 주소창 대응 */
         #stage {
-            height: 100vh;
             height: 100svh; /* iOS Safari 대응 */
             width: 100%;
             background-color: #000;
             overflow: hidden; 
             position: relative;
             perspective: 1000px;
+            /* [수정됨] z-index 명시: 겹침 문제 방지를 위해 갤러리와 동일하거나 관리된 레벨 부여 */
+            z-index: 15; 
         }
 
-        /* -------------------------------------------
-           새로 추가된 갤러리 섹션 스타일
-           ------------------------------------------- */
-        /* [수정됨] 모바일 주소창 대응 */
+        /* 갤러리 섹션 */
         #gallery-stage {
-            height: 100vh;
             height: 100svh; /* iOS Safari 대응 */
             width: 100%;
             position: relative;
@@ -189,11 +184,9 @@
 
         /* -------------------------------------------
            📱 모바일 스타일 오버라이드 
-           - 이미지와 버튼을 분리하여 절대 위치로 고정합니다.
            ------------------------------------------- */
         @media (max-width: 768px) {
             .marionette-group {
-                /* 그룹 전체를 화면 꽉 차게 설정하여 기준점을 잡습니다 */
                 position: absolute; left: 0; top: 0; 
                 width: 100% !important; 
                 height: 100vh;
@@ -201,17 +194,16 @@
             }
 
             .pendulum { 
-                /* 펜듈럼도 화면 전체 크기로 확장 */
                 position: relative; 
                 width: 100%; 
                 height: 100%; 
-                display: block; /* Flex 해제 */
+                display: block; 
             }
 
-            /* 1. 이미지를 화면 상단 영역에 고정 (absolute) */
+            /* 이미지 상단 고정 */
             .mockup-wrapper { 
                 position: absolute;
-                top: 20%; /* 화면 상단에서 20% 지점에 위치 */
+                top: 20%; 
                 left: 50%;
                 transform: translateX(-50%);
                 width: 100%;
@@ -224,15 +216,15 @@
             .p1 .mockup-img, .p2 .mockup-img, .p3 .mockup-img { 
                 width: auto; 
                 max-width: 80vw; 
-                max-height: 40vh; /* 이미지가 너무 커지지 않도록 제한 */
+                max-height: 40vh; 
                 object-fit: contain; 
             }
 
-            /* 2. 버튼/텍스트 박스를 화면 하단 영역에 고정 (absolute) */
+            /* 버튼 하단 고정 */
             .info-bubbles { 
                 position: absolute; 
-                top: auto !important; /* 기존 top 값 무시 */
-                bottom: 15% !important; /* 화면 바닥에서 15% 위로 고정 */
+                top: auto !important; 
+                bottom: 15% !important; 
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 
@@ -249,7 +241,6 @@
             }
 
             .bubble { 
-                /* 개별 버블 위치 초기화하고 flex 아이템으로 배치 */
                 position: relative !important; 
                 top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; 
                 width: 100%; 
@@ -261,7 +252,7 @@
             .b-top-right { text-align: center; }
             .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 50px; }
 
-            /* 줄(String) 위치 조정 */
+            /* 줄(String) */
             .string-rack { 
                 position: absolute; 
                 top: 0; 
@@ -269,7 +260,7 @@
                 transform: translateX(-50%);
                 z-index: 0; 
                 opacity: 0.5; 
-                height: 50vh !important; /* 줄 길이를 이미지 근처까지 오도록 조정 */
+                height: 50vh !important; 
             }
         }
 
@@ -397,7 +388,10 @@
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        // [수정됨] 모바일 리사이즈 시 스크롤 트리거가 과도하게 재계산되어 화면이 튀는 것을 방지
+        // [수정됨] iOS/모바일에서 주소창 리사이즈로 인한 튀는 현상을 막는 가장 강력한 해결책
+        // 이 코드는 브라우저의 기본 스크롤 동작을 JS로 제어하여 주소창이 왔다 갔다 하는 것을 최소화합니다.
+        ScrollTrigger.normalizeScroll(true); 
+        
         ScrollTrigger.config({ ignoreMobileResize: true });
 
         // --- 1. 마리오네트 로직 (기존) ---
@@ -410,11 +404,9 @@
                 const isMobile = window.innerWidth <= 768;
                 
                 if (isMobile) {
-                    // [수정됨] 모바일: 화면 가로의 30% 영역에만 실이 생기도록 너비 강제 조정
                     rack.style.width = '30vw'; 
                     rack.style.maxWidth = 'none';
                 } else {
-                    // 데스크톱: data-width 속성값 사용
                     rack.style.width = rack.dataset.width; 
                     rack.style.maxWidth = 'none'; 
                     rack.style.height = rack.dataset.height; 
@@ -502,13 +494,10 @@
         const items = document.querySelectorAll(".word-item");
         const STAGGER_AMOUNT = 0.08; // 아이템 간 시차 (초)
 
-        // 4-1. 모든 아이템에 stagger delay CSS 변수 설정 (CSS Transition Stagger)
         items.forEach((item, index) => {
-            // --item-delay 변수를 사용하여 각 아이템이 고유한 지연 시간을 갖도록 설정
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
         
-        // (1) 배경 고정 (Pin) - 기존 유지
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top top",
@@ -517,22 +506,14 @@
             scrub: true 
         });
 
-        // (2) ScrollTrigger로 CSS 클래스 토글 (애니메이션 시작/종료 제어)
         ScrollTrigger.create({
             trigger: "#gallery-stage",
-            start: "top 60%", // 섹션이 보이기 시작하면 실행
-            
-            // onEnter: 클래스 추가 (애니메이션 시작)
+            start: "top 60%", 
             onEnter: () => items.forEach(item => item.classList.add('is-active')),
-            
-            // onLeaveBack: 클래스 제거 (애니메이션 역방향/초기 상태 복귀)
             onLeaveBack: () => items.forEach(item => item.classList.remove('is-active')),
-
-            // 토글 액션을 play/none/none/reverse로 설정하여 스크롤 방향에 따라 제어
             toggleActions: "play none none reverse"
         });
 
-        // (3) 모달 및 배경 로직 (기존 동일)
         const galleryBgImg = document.getElementById("bg-img");
         const modal = document.getElementById('image-modal');
         const modalContentWrapper = document.getElementById('modal-content-wrapper');
