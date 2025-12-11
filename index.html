@@ -388,10 +388,8 @@
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        // [수정됨] iOS/모바일에서 주소창 리사이즈로 인한 튀는 현상을 막는 가장 강력한 해결책
-        // 이 코드는 브라우저의 기본 스크롤 동작을 JS로 제어하여 주소창이 왔다 갔다 하는 것을 최소화합니다.
+        // [iOS/모바일 주소창 리사이즈 튀는 현상 방지]
         ScrollTrigger.normalizeScroll(true); 
-        
         ScrollTrigger.config({ ignoreMobileResize: true });
 
         // --- 1. 마리오네트 로직 (기존) ---
@@ -498,14 +496,16 @@
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
         
+        // (1) 배경 고정 (Pin) - 수정된 부분
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top top",
-            end: "+=1200", 
+            end: "+=2400", // [수정됨] 1200 -> 4000 (약 3~4배 길게 설정하여 휠 여러 번 굴려야 넘어가도록 변경)
             pin: true,
             scrub: true 
         });
 
+        // (2) 애니메이션 트리거 (기존 유지)
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top 60%", 
@@ -514,6 +514,7 @@
             toggleActions: "play none none reverse"
         });
 
+        // (3) 모달 및 배경 로직 (기존 유지)
         const galleryBgImg = document.getElementById("bg-img");
         const modal = document.getElementById('image-modal');
         const modalContentWrapper = document.getElementById('modal-content-wrapper');
@@ -558,7 +559,6 @@
             tempImg.src = src;
         };
 
-        
         items.forEach(item => {
             const src = item.dataset.src;
             item.addEventListener("mouseover", () => { updateGalleryBackground(src); });
