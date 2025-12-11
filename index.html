@@ -14,12 +14,23 @@
         a { color: inherit; text-decoration: none; }
 
         section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
-        #hero { height: 100vh; background: radial-gradient(#333, #000); justify-content: center; z-index: 10; }
+        
+        /* [수정됨] 모바일 주소창 대응을 위해 height를 100vh -> 100svh로 변경 */
+        #hero { 
+            height: 100vh; 
+            height: 100svh; /* iOS Safari 대응: 주소창이 있어도 잘리지 않는 높이 */
+            background: radial-gradient(#333, #000); 
+            justify-content: center; 
+            z-index: 10; 
+        }
         #about { min-height: 50vh; background: #111; padding: 50px; text-align: center; z-index: 10; }
 
         /* 프로젝트 스테이지 (Pinned) */
+        /* [수정됨] 모바일 주소창 대응 */
         #stage {
-            height: 100vh; width: 100%;
+            height: 100vh;
+            height: 100svh; /* iOS Safari 대응 */
+            width: 100%;
             background-color: #000;
             overflow: hidden; 
             position: relative;
@@ -29,8 +40,10 @@
         /* -------------------------------------------
            새로 추가된 갤러리 섹션 스타일
            ------------------------------------------- */
+        /* [수정됨] 모바일 주소창 대응 */
         #gallery-stage {
             height: 100vh;
+            height: 100svh; /* iOS Safari 대응 */
             width: 100%;
             position: relative;
             overflow: hidden;
@@ -383,6 +396,9 @@
 
     <script>
         gsap.registerPlugin(ScrollTrigger);
+
+        // [수정됨] 모바일 리사이즈 시 스크롤 트리거가 과도하게 재계산되어 화면이 튀는 것을 방지
+        ScrollTrigger.config({ ignoreMobileResize: true });
 
         // --- 1. 마리오네트 로직 (기존) ---
         function createBalancedStrings() {
