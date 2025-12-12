@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marionette Final + Gallery</title>
+    <title>Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -70,38 +70,24 @@
             padding: 0;
         }
 
-        /* 배경 실 효과 스타일 (CSS 애니메이션) */
+        /* 배경 실 효과 스타일 */
         .about-strings {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
             pointer-events: none;
-            /* 투명도 트랜지션 (사라질 때 부드럽게) */
-            /* 여기서 opacity를 제어하면 JS gsap.to와 충돌할 수 있으므로 제거하거나 주의 */
-            /* JS에서 제어하므로 기본은 1 */
-            opacity: 1; 
         }
         
         .about-string {
             position: absolute; 
             top: 0;
-            width: 2px; /* 잘 보이게 두께 조정 */
+            width: 1px; 
             height: 100%;
-            transform: scaleY(0); /* 기본 상태: 길이 0 */
+            transform: scaleY(0); 
             transform-origin: top; 
-            /* CSS 트랜지션으로 애니메이션 정의 */
             transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-        /* 실 애니메이션 활성화 상태 (클래스가 붙으면 실행) */
-        #about.strings-active .about-string {
-            transform: scaleY(1);
-        }
-
-        /* 각 실마다 딜레이를 주어 순차적으로 내려오는 느낌 (JS 생성 시 인라인으로도 부여됨) */
-        #about.strings-active .about-string:nth-child(odd) { transition-delay: 0.1s; }
-        #about.strings-active .about-string:nth-child(even) { transition-delay: 0.3s; }
 
         /* 콘텐츠 래퍼 */
         .about-content {
@@ -146,13 +132,25 @@
         .about-text h2 { font-size: 3rem; margin-bottom: 1.5rem; font-weight: bold; color: #fff; }
         .about-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 1rem; }
 
-        /* [콘텐츠 활성화 상태] */
+        /* [활성화 상태] Trigger 클래스 */
         .about-content.content-active .about-photo,
         .about-content.content-active .about-text {
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* 실 애니메이션 활성화 (부모인 #about에 클래스 추가 예정) */
+        #about.strings-active .about-string {
+            transform: scaleY(1);
+        }
         
+        /* 실마다 딜레이를 주어 불규칙하게 내려오게 함 */
+        #about.strings-active .about-string:nth-child(1) { transition-delay: 0.1s; }
+        #about.strings-active .about-string:nth-child(2) { transition-delay: 0.3s; }
+        #about.strings-active .about-string:nth-child(3) { transition-delay: 0.0s; }
+        #about.strings-active .about-string:nth-child(4) { transition-delay: 0.4s; }
+        #about.strings-active .about-string:nth-child(5) { transition-delay: 0.2s; }
+
         /* -------------------------------------------
             📱 모바일 스타일 (About)
             ------------------------------------------- */
@@ -204,6 +202,7 @@
             position: relative;
             overflow: hidden;
             display: flex;
+            /* flex-direction: column 제거하여 중앙 정렬 유지, 타이틀은 absolute로 처리 */
             justify-content: center;
             align-items: center;
             background: #000;
@@ -223,6 +222,20 @@
             background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
         }
 
+        /* [NEW] 갤러리 타이틀 스타일 (absolute로 상단 배치) */
+        .gallery-title {
+            position: absolute; 
+            top: 50px; /* 상단 여백 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            font-size: 3rem; 
+            font-weight: bold; 
+            color: #fff; 
+            margin-bottom: 0;
+            text-align: center;
+        }
+
         /* 텍스트 리스트 */
         .gallery-content {
             position: relative; z-index: 2; display: grid; 
@@ -236,7 +249,8 @@
         .word-item {
             cursor: pointer;
             background-color: #1a1a1a; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* 기본 테두리 */
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
@@ -246,7 +260,7 @@
             opacity: 0; 
             transform: translateY(100px) scale(0.9);
             
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.2s ease-out; 
             will-change: transform, opacity;
 
             pointer-events: none;
@@ -266,10 +280,11 @@
             transition-delay: var(--item-delay);
         }
         
+        /* [수정됨] 호버 시 랜덤 색상 적용 (JS에서 --hover-color 설정) */
         .word-item:hover { 
             transform: scale(1.02); 
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-            border-color: rgba(255, 255, 255, 0.5); 
+            border-color: var(--hover-color, rgba(255, 255, 255, 0.8)); 
         }
 
         .thumbnail-img {
@@ -289,15 +304,23 @@
             bottom: 0;
             left: 0;
             width: 100%;
+            /* [수정됨] 기본 배경색 복구 */
             background: rgba(0, 0, 0, 0.6);
             padding: 0.5rem 0.5rem;
             font-size: 1rem;
-            font-weight: bold;
-            color: #fff;
+            font-weight: normal; 
+            color: #fff; 
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        /* [수정됨] 호버 시 캡션 배경 및 글자색 변경 */
+        .word-item:hover .thumbnail-caption {
+            background-color: var(--hover-color, rgba(255, 255, 255, 0.8));
+            color: #333; /* 밝은 배경 위 어두운 글자 */
         }
         
         .modal-enter { opacity: 0; transform: scale(0.9); }
@@ -306,10 +329,14 @@
         @media (max-width: 1024px) {
             .gallery-content { grid-template-columns: repeat(4, 1fr); }
             .thumbnail-caption { font-size: 0.9rem; }
+            /* 태블릿 이하에서 타이틀 숨김 */
+            .gallery-title { display: none; }
         }
         @media (max-width: 768px) {
             .gallery-content { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
             .thumbnail-caption { font-size: 0.8rem; padding: 0.4rem; }
+            /* 모바일에서도 숨김 */
+            .gallery-title { display: none; }
         }
         @media (max-width: 480px) {
             .gallery-content { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
@@ -570,7 +597,8 @@
                 <h2>About Me </h2>
                 <p>
                     안녕하세요.<br>
-                    스쳐지나가는 수많은 아이디어들을 조종하고 연결해서<br>
+                    다양한 툴을 조종하고<br>
+                    아이디어들을 연결하여<br>
                     창의적인 결과물을 만드는<br>
                     UXUI 디자이너 김미화입니다.
                 </p>
@@ -624,6 +652,9 @@
             <img id="bg-img" src="https://placehold.co/1920x1080/111/111?text=%20" alt="Background" style="opacity: 1;">
             <div class="overlay"></div>
         </div>
+
+        <!-- [NEW] 갤러리 타이틀 추가 -->
+        <h2 class="gallery-title">Gallery</h2>
 
         <div class="gallery-content">
             <!-- 갤러리 이미지들은 로컬 경로로 복원되었습니다. -->
@@ -712,6 +743,7 @@
         // --- 0. Hero 색상 전환 및 Pin (추가된 부분) ---
         // 전역 변수로 스크롤 상태 추적 (0: 처음, 1: 전환 완료)
         let rainMode = 0; 
+        let rainControl = { ratio: 1 }; // [NEW] Control object for rain quantity
 
         // 타임라인으로 변경하여 배경색 전환과 캔버스 오퍼시티 페이드 아웃을 연결
         const heroTl = gsap.timeline({
@@ -731,8 +763,7 @@
         heroTl.to("#hero", { backgroundColor: "#000000", duration: 1 })
               // [수정됨] 로티 애니메이션 사라지는 속도를 늦춤 (duration: 0.1 -> 0.4, 시작점 0.2 -> 0.1)
               .to("lottie-player", { opacity: 0, autoAlpha: 0, duration: 0.4 }, 0.1)
-              // 3. 비 캔버스는 거의 끝까지 유지되다가 마지막(90%) 쯤에 사라짐
-              .to("#rain-canvas", { opacity: 0, duration: 0.1 }, 0.9);
+              .to(rainControl, { ratio: 0, duration: 0.5 }, 0.5); // Decrease rain from 0.5 to 1.0
         
         // --- [NEW] 마리오네트 실(비) 효과 ---
         const canvas = document.getElementById('rain-canvas');
@@ -783,6 +814,11 @@
                 this.fastSpeed = Math.random() * 2 + 1;     // 비(선)일 때 속도
                 
                 this.opacity = Math.random() * 0.2 + 0.05; 
+                
+                // [NEW] Random pastel color for rain
+                this.r = Math.floor(Math.random() * 100) + 155; // 155-255 for bright pastel
+                this.g = Math.floor(Math.random() * 100) + 155;
+                this.b = Math.floor(Math.random() * 100) + 155;
             }
             
             update() {
@@ -798,8 +834,30 @@
                 }
             }
             
-            draw() {
+            draw(index, total) {
                 ctx.beginPath();
+                
+                // [NEW] Fade out logic based on rainControl.ratio
+                const minRain = 30;
+                let fadeFactor = 1;
+
+                if (index >= minRain) {
+                    const countToFade = total - minRain;
+                    // normalizedIndex: 0 (index=30) to 1 (index=total-1)
+                    const normalizedIndex = (index - minRain) / countToFade;
+                    
+                    // As ratio decreases from 1 to 0, higher normalizedIndex fades first.
+                    // 'distance' represents how far current ratio is above the item's threshold.
+                    // Multiplier 5 makes the fade transition smoother but distinct.
+                    const distance = rainControl.ratio - normalizedIndex;
+                    fadeFactor = Math.max(0, Math.min(1, distance * 5));
+                }
+
+                // Apply fadeFactor to global opacity
+                const currentOpacity = this.opacity * fadeFactor;
+                
+                // If invisible, skip drawing to save performance
+                if (currentOpacity <= 0.01) return;
                 
                 // rainMode에 따라 모양과 색상 변화
                 
@@ -813,8 +871,7 @@
                 const endWidth = 1;
                 const currentWidth = startWidth - (startWidth - endWidth) * rainMode;
 
-                // 3. 색상: 0일 때는 검은색(0,0,0), 1일 때는 흰색(255,255,255)
-                const colorVal = Math.floor(rainMode * 255);
+                // 3. 색상: use stored pastel RGB
                 
                 // 둥근 끝처리를 해야 길이가 0일 때 원으로 보임
                 ctx.lineCap = 'round'; 
@@ -822,7 +879,7 @@
                 ctx.moveTo(this.x, this.y);
                 ctx.lineTo(this.x, this.y + currentLength);
                 
-                ctx.strokeStyle = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${this.opacity})`;
+                ctx.strokeStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${currentOpacity})`;
                 ctx.lineWidth = currentWidth;
                 ctx.stroke();
             }
@@ -844,6 +901,11 @@
                 this.slowSpeed = Math.random() * 0.5 + 0.2;
                 this.fastSpeed = Math.random() * 2 + 1;
                 this.opacity = Math.random() * 0.2 + 0.1; // Slightly more visible than rain
+                
+                // [NEW] Random pastel color generation
+                this.r = Math.floor(Math.random() * 100) + 155; // 155-255 for bright pastel
+                this.g = Math.floor(Math.random() * 100) + 155;
+                this.b = Math.floor(Math.random() * 100) + 155;
             }
 
             update() {
@@ -855,13 +917,30 @@
                 }
             }
 
-            draw() {
-                // Fade out immediately on scroll (disappears by 10% scroll progress)
+            draw(index, total) {
+                // Logic to keep some texts or fade all
+                const minText = 3; 
+                let fadeFactor = 1;
+
+                if (index >= minText) {
+                    const countToFade = total - minText;
+                    const normalizedIndex = (index - minText) / countToFade;
+                    const distance = rainControl.ratio - normalizedIndex;
+                    fadeFactor = Math.max(0, Math.min(1, distance * 5));
+                }
+                
+                // Scroll fade logic (activeOpacity) combined with sequential fade (fadeFactor)
                 let activeOpacity = this.opacity * (1 - rainMode * 10);
                 if (activeOpacity < 0) activeOpacity = 0;
+                
+                // Apply sequential fade
+                activeOpacity *= fadeFactor;
 
-                const colorVal = Math.floor(rainMode * 255);
-                ctx.fillStyle = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${activeOpacity})`;
+                if (activeOpacity <= 0.01) return;
+
+                // [NEW] Use stored random color with calculated opacity
+                ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${activeOpacity})`;
+                
                 ctx.font = `bold ${this.fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.fillText(this.text, this.x, this.y);
@@ -870,14 +949,18 @@
         
         function animateRain() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            rains.forEach(rain => {
+            
+            // Loop all, pass index and total
+            rains.forEach((rain, i) => {
                 rain.update();
-                rain.draw();
+                rain.draw(i, rains.length);
             });
-            texts.forEach(text => {
+            
+            texts.forEach((text, i) => {
                 text.update();
-                text.draw();
+                text.draw(i, texts.length);
             });
+            
             requestAnimationFrame(animateRain);
         }
         
@@ -885,6 +968,39 @@
         initRain();
         animateRain();
         // -------------------------------------
+
+        // [NEW] Function to randomize bubble colors
+        function colorizeBubbles() {
+            const bubbles = document.querySelectorAll('.info-bubbles .bubble');
+            bubbles.forEach(bubble => {
+                // Only style if it doesn't have an inline background already set in HTML (though we can override)
+                // The prompt asks to change the bubbles to random pastel colors.
+                // Currently some have style="background: ..." inline. 
+                // We'll override or set it.
+                
+                const r = Math.floor(Math.random() * 100) + 100; // 100-200 range, slightly darker than rain for visibility on white text
+                const g = Math.floor(Math.random() * 100) + 100;
+                const b = Math.floor(Math.random() * 100) + 100;
+                
+                // Set background with some transparency
+                bubble.style.background = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                bubble.style.border = `1px solid rgba(${r}, ${g}, ${b}, 0.8)`;
+            });
+        }
+        // Call immediately
+        colorizeBubbles();
+
+        // [NEW] Setup random hover border color for gallery items
+        function setupGalleryItems() {
+            const items = document.querySelectorAll('.word-item');
+            items.forEach(item => {
+                const r = Math.floor(Math.random() * 100) + 155;
+                const g = Math.floor(Math.random() * 100) + 155;
+                const b = Math.floor(Math.random() * 100) + 155;
+                item.style.setProperty('--hover-color', `rgba(${r}, ${g}, ${b}, 0.8)`);
+            });
+        }
+        setupGalleryItems();
 
         // [NEW] Trigger for strings when half visible
         ScrollTrigger.create({
@@ -1059,10 +1175,10 @@
              if (galleryBgImg.src.includes(src)) { return; }
              gsap.killTweensOf(galleryBgImg);
              gsap.to(galleryBgImg, { 
-                 opacity: 0, duration: 0.3, filter: 'blur(5px)',
+                 opacity: 0, duration: 0.2, filter: 'blur(5px)', // [수정됨] 0.3s -> 0.2s
                  onComplete: () => {
                      galleryBgImg.src = src;
-                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.7, filter: 'blur(0px)' });
+                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.4, filter: 'blur(0px)' }); // [수정됨] 0.7s -> 0.4s
              }});
         };
 
@@ -1121,7 +1237,10 @@
                 const r = Math.floor(Math.random() * 155) + 100; // 100-255 (lighter)
                 const g = Math.floor(Math.random() * 155) + 100;
                 const b = Math.floor(Math.random() * 155) + 100;
-                str.style.background = `rgba(${r}, ${g}, ${b}, 0.3)`; // Random color, 0.3 opacity
+                
+                // [Modified] Random opacity between 0.1 and 0.5
+                const opacity = (Math.random() * 0.4 + 0.1).toFixed(2); 
+                str.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`; 
                 
                 // Random animation delay (0s - 1s) for staggered effect
                 str.style.transitionDelay = Math.random() * 1 + 's';
