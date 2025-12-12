@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Lottie Player 라이브러리 -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
     <style>
         /* --- 기본 설정 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -17,18 +21,46 @@
         
         #hero { 
             height: 100svh; 
-            background: radial-gradient(#333, #000); 
+            background-color: #505050; /* 초기 배경색 */
             justify-content: center; 
-            z-index: 10; 
+            z-index: 10;
+            gap: 1.5rem; 
+            position: relative;
+            overflow: hidden; /* 캔버스 오버플로우 방지 */
+        }
+        
+        /* 비 내리는 효과 캔버스 (배경) */
+        #rain-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* 배경 바로 위 */
+            pointer-events: none;
+        }
+
+        /* 로티 및 텍스트는 캔버스 위에 위치 */
+        #hero lottie-player, #hero h1, #hero p {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 로티 플레이어 스타일 (크기 2배로 수정됨) */
+        #hero lottie-player {
+            width: 600px;
+            height: 600px;
+            max-width: 80vw; 
+            max-height: 80vw;
         }
 
         /* -------------------------------------------
-           About Me 섹션 스타일
-           ------------------------------------------- */
+            About Me 섹션 스타일
+            ------------------------------------------- */
         #about { 
             height: 100svh; 
             width: 100%;
-            background: #111; 
+            background: #000; /* [수정됨] #111 -> #000 (포트폴리오 페이지 배경색과 통일) */
             position: relative; 
             overflow: hidden; 
             z-index: 15; 
@@ -38,12 +70,28 @@
             padding: 0;
         }
 
-        /* 배경 */
-        .about-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-            opacity: 0.3; 
+        /* [삭제됨] 배경 이미지 스타일 제거됨 */
+
+        /* [NEW] 배경 실 효과 스타일 수정 */
+        .about-strings {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            /* Flex 제거하고 자식 요소 absolute로 랜덤 배치 */
+            pointer-events: none;
         }
-        .about-bg img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .about-string {
+            position: absolute; /* 랜덤 위치를 위해 absolute 사용 */
+            top: 0;
+            width: 1px; /* 실 두께 */
+            height: 100%;
+            /* background 색상은 JS에서 랜덤 지정 */
+            transform: scaleY(0); /* 처음엔 길이 0 */
+            transform-origin: top; /* 위에서 아래로 자라나도록 */
+            transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
 
         /* 콘텐츠 래퍼 */
         .about-content {
@@ -65,8 +113,10 @@
             align-items: center;
             
             opacity: 0;
-            transform: translateX(-50px); 
+            /* 위에서 아래로 이동 */
+            transform: translateY(-100px); 
             transition: all 1s ease;
+            transition-delay: 0.5s; /* 실이 내려오고 나서 시작 */
         }
         .about-photo img {
             width: 100%; height: 100%; object-fit: cover; 
@@ -80,22 +130,29 @@
             text-align: left;
             
             opacity: 0;
-            transform: translateX(50px); 
-            transition: all 1s ease 0.2s; 
+            /* 위에서 아래로 이동 */
+            transform: translateY(-100px); 
+            transition: all 1s ease;
+            transition-delay: 0.7s; /* 사진보다 조금 더 늦게 */
         }
         .about-text h2 { font-size: 3rem; margin-bottom: 1.5rem; font-weight: bold; color: #fff; }
         .about-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 1rem; }
 
-        /* [활성화 상태] */
+        /* [활성화 상태] Trigger 클래스 */
         .about-content.is-active .about-photo,
         .about-content.is-active .about-text {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0);
         }
 
+        /* 실 애니메이션 활성화 (부모인 #about에 클래스 추가 예정) */
+        #about.is-active .about-string {
+            transform: scaleY(1);
+        }
+        
         /* -------------------------------------------
-           📱 모바일 스타일 (About)
-           ------------------------------------------- */
+            📱 모바일 스타일 (About)
+            ------------------------------------------- */
         @media (max-width: 768px) {
             .about-content {
                 flex-direction: column; 
@@ -107,13 +164,14 @@
             .about-photo {
                 width: 100%;
                 height: 40vh; 
-                transform: translateY(-30px); 
+                /* 모바일에서도 위에서 아래로 */
+                transform: translateY(-50px); 
             }
 
             .about-text {
                 width: 100%;
                 text-align: center; 
-                transform: translateY(30px); 
+                transform: translateY(-50px); 
                 padding: 0 1rem;
             }
             .about-text h2 { font-size: 2rem; margin-bottom: 1rem; }
@@ -257,8 +315,8 @@
         }
 
         /* -------------------------------------------
-           보너스 섹션 스타일
-           ------------------------------------------- */
+            보너스 섹션 스타일
+            ------------------------------------------- */
         #bonus {
             width: 100%;
             min-height: 60vh; 
@@ -279,7 +337,7 @@
             justify-content: center;
             align-items: center;
             gap: 3rem;
-            text-align: center; /* 전체 텍스트 중앙 정렬 */
+            text-align: center; 
         }
 
         .bonus-left {
@@ -304,7 +362,7 @@
         }
 
         .bonus-right img {
-            max-width: 450px;
+            max-width: 200px;
             width: 100%;
             height: auto;
             border-radius: 20px;
@@ -315,22 +373,35 @@
             transform: translateY(-5px);
         }
 
+        /* 레트로 픽셀 아트 스타일 버튼 */
         .bonus-btn {
             display: inline-block;
-            padding: 18px 45px;
-            background: #fff;
-            color: #000;
-            font-weight: 800;
-            border-radius: 50px;
+            padding: 16px 50px;
+            
+            /* 주황색 배경 */
+            background-color: #FFB347; 
+            color: #fff;
+            font-weight: bold;
             font-size: 1.2rem;
-            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
             text-decoration: none;
-            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+            
+            /* 픽셀 느낌의 굵은 테두리와 그림자 */
+            border: 4px solid #4A332A; /* 진한 갈색/검은색 계열 */
+            border-radius: 0px; /* 각진 모서리 */
+            box-shadow: 0px 6px 0px #4A332A; /* 입체 그림자 */
+            
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
         }
+
         .bonus-btn:hover {
-            transform: scale(1.05);
-            background: #f0f0f0;
-            box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+            background-color: #FFC06E; /* 호버 시 약간 밝게 */
+            transform: translateY(2px); /* 살짝 눌림 */
+            box-shadow: 0px 4px 0px #4A332A; /* 그림자 줄어듦 */
+        }
+
+        .bonus-btn:active {
+            transform: translateY(6px); /* 완전히 눌림 */
+            box-shadow: none; /* 그림자 없음 */
         }
 
         /* 📱 모바일 대응 (보너스 섹션) */
@@ -354,8 +425,8 @@
         footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
 
         /* -------------------------------------------
-           Marionette & Bubble Styles
-           ------------------------------------------- */
+            Marionette & Bubble Styles
+            ------------------------------------------- */
         .marionette-group {
             position: absolute; top: 0; left: 50%; width: 2px; height: 100vh; pointer-events: none; will-change: transform, opacity, filter; z-index: 5; opacity: 0; visibility: hidden; 
         }
@@ -384,8 +455,8 @@
 
 
         /* -------------------------------------------
-           📱 모바일 스타일 오버라이드 
-           ------------------------------------------- */
+            📱 모바일 스타일 오버라이드 
+            ------------------------------------------- */
         @media (max-width: 768px) {
             .marionette-group {
                 position: absolute; left: 0; top: 0; 
@@ -469,19 +540,33 @@
 </head>
 <body>
 
-    <section id="hero"><h1>Final Build</h1><p>마리오네트 & 인터랙티브 갤러리</p></section>
+    <!-- Hero 섹션: 캔버스 추가 -->
+    <section id="hero">
+        <canvas id="rain-canvas"></canvas>
+        <lottie-player 
+            src="/img/ani.json" 
+            background="transparent" 
+            speed="1" 
+            loop 
+            autoplay>
+        </lottie-player>
+        <h1>Final Build</h1>
+        <p>마리오네트 & 인터랙티브 갤러리</p>
+    </section>
     
     <!-- About Me 섹션 -->
     <section id="about">
-        <div class="about-bg">
-            <img src="https://placehold.co/1920x1080/000/333?text=About+BG" alt="Background">
-        </div>
+        <!-- [NEW] 배경 실 효과 요소 (JS로 생성됨) -->
+        <div class="about-strings"></div>
+
+        <!-- [삭제됨] 배경 이미지 div 삭제 -->
+        
         <div class="about-content">
             <div class="about-photo">
-                <img src="/img/about.JPG" alt="Profile">
+                <img src="/img/about.JPG" onerror="this.src='https://placehold.co/400x600/111/fff?text=Profile+Image'" alt="Profile">
             </div>
             <div class="about-text">
-                <h2>About Me</h2>
+                <h2>About Me </h2>
                 <p>
                     안녕하세요. 인터랙티브 웹 개발자입니다.<br>
                     사용자에게 새로운 경험을 전달하는 것을 목표로 합니다.<br>
@@ -504,7 +589,7 @@
             <div class="pendulum">
                 <div class="string-rack" data-height="30vh" data-width="500px"></div>
                 <div class="mockup-wrapper">
-                    <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/600x400/1a1a1a/FFF?text=Web+Project'" alt="Web Project" class="mockup-img">
+                    <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/500x300/333/fff?text=Project+1+Mockup'" alt="Web Project" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
                     <div class="bubble b-top-left"><h3>E-Commerce Platform</h3><p>쇼핑몰 리뉴얼 프로젝트</p></div>
@@ -520,10 +605,10 @@
             <div class="pendulum">
                 <div class="string-rack" data-height="15vh" data-width="300px"></div>
                 <div class="mockup-wrapper">
-                    <img src="/img/mockup2.png" onerror="this.src='https://placehold.co/300x600/222/FFF?text=Mobile+App'" alt="Mobile App" class="mockup-img">
+                    <img src="/img/mockup2.png" onerror="this.src='https://placehold.co/300x500/555/fff?text=Project+2+Mockup'" alt="Mobile App" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left"><h3>Fitness Tracker</h3><p>운동 코칭 앱</p></div>
+                    <div class="bubble b-top-left"><h3>Wellio</h3><p>가족 건강 커뮤니티 앱</p></div>
                     <div class="bubble b-top-right"><p><strong>UI/UX Designer</strong> / Figma</p></div>
                     <a href="#" class="bubble b-bottom-left">기획서 바로가기</a>
                     <a href="#" class="bubble b-bottom-right">앱 실행해보기</a>
@@ -540,58 +625,59 @@
         </div>
 
         <div class="gallery-content">
+            <!-- 갤러리 이미지들은 로컬 경로로 복원되었습니다. -->
             <div class="word-item" data-type="image" data-src="/img/p1.jpg">
-                <img src="/img/p1.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img1'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p1.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P1'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p2.jpg">
-                <img src="/img/p2.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img2'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p2.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P2'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p4.png">
-                <img src="/img/p4.png" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img3'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p4.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P4+Character'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">게임 캐릭터 디자인</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p3.jpg">
-                <img src="/img/p3.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img4'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p3.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P3'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p5.jpg">
-                <img src="/img/p5.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img5'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p5.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P5'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p6.jpg">
-                <img src="/img/p6.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img6'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p6.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P6'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p8.png">
-                <img src="/img/p8.png" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img7'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p8.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P8+Character'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">개인 캐릭터 디자인</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p7.jpg">
-                <img src="/img/p7.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img8'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p7.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P7'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg">
-                <img src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img9'" alt="Thumbnail" class="thumbnail-img">
+                <img src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Book+Illustration'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">도서 컬러 삽화</div>
             </div>
             <div class="word-item" data-type="image" data-src="/img/p10.jpg">
-                <img src="/img/p10.jpg" onerror="this.src='https://placehold.co/400x250/222/FFF?text=Img10'" alt="Thumbnail" class="thumbnail-img">
+                <img src="/img/p10.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P10'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
         </div>
     </section>
 
-    <!-- [수정됨] 보너스 섹션 (이미지 주소 및 링크 업데이트) -->
+    <!-- 보너스 섹션 -->
     <section id="bonus">
         <div class="bonus-content">
             <div class="bonus-left">
-                <h2>예비 집사 모의 고사</h2>
+                <h2>예비 집사 능력 고사</h2>
             </div>
             <div class="bonus-right">
-                <img src="/img/test.png" alt="예비집사능력고사">
-                <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">테스트 하러가기</a>
+                <img src="/img/test.png" onerror="this.src='https://placehold.co/200x250/444/fff?text=Test+Thumbnail'" alt="예비집사능력고사">
+                <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">테스트 시작하기 ▶</a>
             </div>
         </div>
     </section>
@@ -616,17 +702,151 @@
 
         ScrollTrigger.normalizeScroll(true); 
         ScrollTrigger.config({ ignoreMobileResize: true });
+        
+        // --- 0. Hero 색상 전환 및 Pin (추가된 부분) ---
+        // 전역 변수로 스크롤 상태 추적 (0: 처음, 1: 전환 완료)
+        let rainMode = 0; 
 
-        // About 섹션 스크롤 트리거
-        ScrollTrigger.create({
-            trigger: "#about",
-            start: "top top",
-            end: "+=1000", 
-            pin: true,
-            scrub: true,
-            onEnter: () => document.querySelector('.about-content').classList.add('is-active'),
-            onLeaveBack: () => document.querySelector('.about-content').classList.remove('is-active')
+        // 타임라인으로 변경하여 배경색 전환과 캔버스 오퍼시티 페이드 아웃을 연결
+        const heroTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#hero",
+                start: "top top",
+                end: "+=2500", // 3000 -> 2500으로 변경
+                scrub: 0.5,
+                pin: true, 
+                onUpdate: (self) => {
+                    rainMode = self.progress; 
+                }
+            }
         });
+
+        // [수정됨] Hero 섹션 배경색 전환 목표를 #000000으로 변경
+        heroTl.to("#hero", { backgroundColor: "#000000", duration: 1 })
+              .to("#rain-canvas", { opacity: 0, duration: 0.2 }, 0.8); // 마지막 20% 지점에서 페이드 아웃
+        
+        // --- [NEW] 마리오네트 실(비) 효과 ---
+        const canvas = document.getElementById('rain-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let canvasWidth, canvasHeight;
+        let rains = [];
+        
+        function initRain() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            rains = [];
+            // 화면 너비에 비례해 비의 양 조절 (밀도)
+            const rainCount = Math.floor(canvasWidth * 0.1); 
+            
+            for(let i=0; i<rainCount; i++) {
+                rains.push(new RainDrop());
+            }
+        }
+        
+        class RainDrop {
+            constructor() {
+                this.reset();
+                // 처음 생성 시 화면 전체에 랜덤 분포
+                this.y = Math.random() * canvasHeight; 
+            }
+            
+            reset() {
+                this.x = Math.random() * canvasWidth;
+                this.y = -Math.random() * 200; // 화면 위에서 시작
+                
+                // 마리오네트 실 느낌: 길이를 길게 (100px ~ 300px)
+                this.baseLength = Math.random() * 200 + 100; 
+                
+                // 속도 변수 (느림 -> 빠름)
+                this.slowSpeed = Math.random() * 0.5 + 0.2; // 눈(원)일 때 속도
+                this.fastSpeed = Math.random() * 2 + 1;     // 비(선)일 때 속도
+                
+                this.opacity = Math.random() * 0.2 + 0.05; 
+            }
+            
+            update() {
+                // rainMode(0~1)에 따라 속도 보간 (Interpolation)
+                // 0에 가까우면 slowSpeed, 1에 가까우면 fastSpeed
+                const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
+                
+                this.y += currentSpeed;
+                
+                // 화면 밖으로 나가면 다시 위로
+                if (this.y > canvasHeight) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                
+                // rainMode에 따라 모양과 색상 변화
+                
+                // 1. 길이: 0일 때는 0(원형), 1일 때는 baseLength(선형)
+                // 처음엔 동그랗게 보이기 위해 길이를 거의 0으로 시작
+                const currentLength = this.baseLength * rainMode;
+                
+                // 2. 두께: 0일 때는 두껍게(눈), 1일 때는 얇게(실)
+                // 시작: 4~6px (동그라미), 끝: 0.5~2px (실)
+                const startWidth = 15;
+                const endWidth = 1;
+                const currentWidth = startWidth - (startWidth - endWidth) * rainMode;
+
+                // 3. 색상: 0일 때는 검은색(0,0,0), 1일 때는 흰색(255,255,255)
+                const colorVal = Math.floor(rainMode * 255);
+                
+                // 둥근 끝처리를 해야 길이가 0일 때 원으로 보임
+                ctx.lineCap = 'round'; 
+                
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + currentLength);
+                
+                ctx.strokeStyle = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${this.opacity})`;
+                ctx.lineWidth = currentWidth;
+                ctx.stroke();
+            }
+        }
+        
+        function animateRain() {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            rains.forEach(rain => {
+                rain.update();
+                rain.draw();
+            });
+            requestAnimationFrame(animateRain);
+        }
+        
+        window.addEventListener('resize', initRain);
+        initRain();
+        animateRain();
+        // -------------------------------------
+
+        // About 섹션 스크롤 트리거 (수정됨: 타임라인으로 변경하여 실 오퍼시티 조절)
+        const aboutTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#about",
+                start: "top top",
+                end: "+=2000", // 1000 -> 2000으로 변경
+                pin: true,
+                scrub: true,
+                onEnter: () => {
+                    document.querySelector('#about').classList.add('is-active');
+                    document.querySelector('.about-content').classList.add('is-active');
+                },
+                onLeaveBack: () => {
+                    document.querySelector('#about').classList.remove('is-active');
+                    document.querySelector('.about-content').classList.remove('is-active');
+                }
+            }
+        });
+
+        // 스크롤 마지막 구간에서 실들이 서서히 사라지도록 설정
+        aboutTl.to({}, { duration: 0.8 }) // 80% 구간까지는 대기 (실이 보이는 상태 유지)
+               .to(".about-strings", { opacity: 0, duration: 0.2 }); // 마지막 20% 구간에서 투명해짐
 
         // --- 1. 마리오네트 로직 ---
         function createBalancedStrings() {
@@ -678,18 +898,18 @@
         const startX_Left = isMobile ? 0 : "-35vw";
         
         tl.fromTo(".p1", { x: startX_Right, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
-          .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
-          .to({}, { duration: 3 }) 
-          .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
-          .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-          
-          .fromTo(".p2", { x: startX_Left, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
-          .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
-          .to({}, { duration: 3 })
-          .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
-          .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
-          
-          // [수정됨] P3 애니메이션 삭제됨
+            .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
+            .to({}, { duration: 3 }) 
+            .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
+            .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
+            
+            .fromTo(".p2", { x: startX_Left, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
+            .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
+            .to({}, { duration: 3 })
+            .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
+            .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
+            
+            // [수정됨] P3 애니메이션 삭제됨
 
 
         // --- 3. 물리 엔진 (Ticker) ---
@@ -767,13 +987,13 @@
 
         const updateGalleryBackground = (src) => {
              if (galleryBgImg.src.includes(src)) { return; }
-            gsap.killTweensOf(galleryBgImg);
-            gsap.to(galleryBgImg, { 
-                opacity: 0, duration: 0.3, filter: 'blur(5px)',
-                onComplete: () => {
-                    galleryBgImg.src = src;
-                    gsap.to(galleryBgImg, { opacity: 1, duration: 0.7, filter: 'blur(0px)' });
-            }});
+             gsap.killTweensOf(galleryBgImg);
+             gsap.to(galleryBgImg, { 
+                 opacity: 0, duration: 0.3, filter: 'blur(5px)',
+                 onComplete: () => {
+                     galleryBgImg.src = src;
+                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.7, filter: 'blur(0px)' });
+             }});
         };
 
         const closeModal = () => {
@@ -812,6 +1032,34 @@
         modalImage.addEventListener('click', closeModal); 
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
+
+        // [NEW] About Section - Dynamic Random Strings
+        function createAboutStrings() {
+            const container = document.querySelector('.about-strings');
+            container.innerHTML = ''; // Clear static elements
+            
+            const stringCount = 10; // Number of strings
+
+            for (let i = 0; i < stringCount; i++) {
+                const str = document.createElement('div');
+                str.classList.add('about-string');
+                
+                // Random left position (0% - 100%)
+                str.style.left = Math.random() * 100 + '%';
+                
+                // Random Color with low opacity (Pastel-ish or randomized RGB)
+                const r = Math.floor(Math.random() * 255);
+                const g = Math.floor(Math.random() * 255);
+                const b = Math.floor(Math.random() * 255);
+                str.style.background = `rgba(${r}, ${g}, ${b}, 0.3)`; // Random color, 0.3 opacity
+                
+                // Random animation delay (0s - 1s) for staggered effect
+                str.style.transitionDelay = Math.random() * 1 + 's';
+                
+                container.appendChild(str);
+            }
+        }
+        createAboutStrings();
 
     </script>
 </body>
