@@ -249,21 +249,36 @@
         .word-item {
             cursor: pointer;
             background-color: #1a1a1a; 
-            /* 기본 테두리 */
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            /* border 대신 inset box-shadow 사용 (안쪽 스트로크) */
+            border: none;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
+            
             position: relative;
             text-align: center;
             
             opacity: 0; 
             transform: translateY(100px) scale(0.9);
             
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.2s ease-out; 
+            /* border-color 대신 box-shadow 트랜지션 적용 */
+            transition: transform 0.3s ease, box-shadow 0.2s ease-out; 
             will-change: transform, opacity;
 
             pointer-events: none;
+        }
+        
+        /* 가상 요소를 이용한 완벽한 안쪽 테두리 구현 */
+        .word-item::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            pointer-events: none; 
+            z-index: 10; 
+            transition: border-color 0.2s ease-out;
         }
         
         .word-item.interaction-ready {
@@ -275,16 +290,18 @@
             transform: translateY(0) scale(1);
             transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1), 
                         opacity 1.2s ease-out, 
-                        box-shadow 0.3s ease, 
-                        border-color 0.3s ease;
+                        box-shadow 0.2s ease-out;
             transition-delay: var(--item-delay);
         }
         
-        /* [수정됨] 호버 시 랜덤 색상 적용 (JS에서 --hover-color 설정) */
+        /* 호버 시 테두리 색상 변경 */
+        .word-item:hover::after {
+            border-color: var(--hover-border-color, rgba(255, 255, 255, 0.5)); 
+        }
+
         .word-item:hover { 
             transform: scale(1.02); 
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-            border-color: var(--hover-color, rgba(255, 255, 255, 0.8)); 
+            box-shadow: none;
         }
 
         .thumbnail-img {
@@ -304,7 +321,6 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            /* [수정됨] 기본 배경색 복구 */
             background: rgba(0, 0, 0, 0.6);
             padding: 0.5rem 0.5rem;
             font-size: 1rem;
@@ -315,12 +331,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
             transition: background-color 0.2s ease, color 0.2s ease;
+            z-index: 11; 
         }
         
-        /* [수정됨] 호버 시 캡션 배경 및 글자색 변경 */
+        /* 호버 시 캡션 배경 및 글자색 변경 */
         .word-item:hover .thumbnail-caption {
             background-color: var(--hover-color, rgba(255, 255, 255, 0.8));
-            color: #333; /* 밝은 배경 위 어두운 글자 */
+            color: #333; 
         }
         
         .modal-enter { opacity: 0; transform: scale(0.9); }
@@ -344,106 +361,72 @@
         }
 
         /* -------------------------------------------
-            보너스 섹션 스타일
+            보너스 섹션 스타일 (수정됨)
             ------------------------------------------- */
         #bonus {
             width: 100%;
-            min-height: 60vh; 
-            background-color: #0f0f0f;
+            /* 화면 가득 채움 -> 450px로 변경 (수정됨) */
+            height: 450px;
+            /* 요청한 배경색 */
+            background-color: #70794B; 
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 80px 20px;
+            padding: 0; 
             z-index: 25;
             position: relative;
+            overflow: hidden;
         }
 
+        /* 배경 비디오 스타일 */
+        .bonus-bg-video {
+            position: absolute;
+            bottom: 0; /* 바텀 고정 */
+            left: 0;
+            width: 100%; /* 가로 맞춤 */
+            height: auto; /* 높이 오토 (비율 유지) */
+            object-fit: cover; /* 필요 시 꽉 차게 */
+            z-index: 0;
+        }
+
+        /* 콘텐츠 래퍼 */
         .bonus-content {
-            width: 90%;
-            max-width: 900px;
+            position: relative;
+            z-index: 2; /* 영상보다 위에 표시 */
+            width: 100%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 3rem;
-            text-align: center; 
-        }
-
-        .bonus-left {
-            width: 100%;
-        }
-
-        .bonus-left h2 {
-            font-size: 4rem;
-            font-weight: 800;
-            line-height: 1.2;
-            color: #fff;
-            letter-spacing: -0.02em;
-            word-break: keep-all; 
-        }
-
-        .bonus-right {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .bonus-right img {
-            max-width: 200px;
-            width: 100%;
-            height: auto;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            transition: transform 0.3s ease;
-        }
-        .bonus-right img:hover {
-            transform: translateY(-5px);
         }
 
         /* 레트로 픽셀 아트 스타일 버튼 */
         .bonus-btn {
             display: inline-block;
             padding: 16px 50px;
-            
-            /* 주황색 배경 */
             background-color: #FFB347; 
             color: #fff;
             font-weight: bold;
             font-size: 1.2rem;
             text-decoration: none;
-            
-            /* 픽셀 느낌의 굵은 테두리와 그림자 */
-            border: 4px solid #4A332A; /* 진한 갈색/검은색 계열 */
-            border-radius: 0px; /* 각진 모서리 */
-            box-shadow: 0px 6px 0px #4A332A; /* 입체 그림자 */
-            
+            border: 4px solid #4A332A; 
+            border-radius: 0px; 
+            box-shadow: 0px 6px 0px #4A332A; 
             transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
         }
 
         .bonus-btn:hover {
-            background-color: #FFC06E; /* 호버 시 약간 밝게 */
-            transform: translateY(2px); /* 살짝 눌림 */
-            box-shadow: 0px 4px 0px #4A332A; /* 그림자 줄어듦 */
+            background-color: #FFC06E; 
+            transform: translateY(2px); 
+            box-shadow: 0px 4px 0px #4A332A; 
         }
 
         .bonus-btn:active {
-            transform: translateY(6px); /* 완전히 눌림 */
-            box-shadow: none; /* 그림자 없음 */
+            transform: translateY(6px); 
+            box-shadow: none; 
         }
 
         /* 📱 모바일 대응 (보너스 섹션) */
         @media (max-width: 768px) {
-            #bonus {
-                padding: 60px 20px;
-            }
-            .bonus-left h2 {
-                font-size: 2.2rem;
-            }
-            .bonus-right img {
-                max-width: 80%;
-            }
             .bonus-btn {
                 padding: 15px 35px;
                 font-size: 1rem;
@@ -594,7 +577,7 @@
                 <img src="/img/about.JPG" onerror="this.src='https://placehold.co/400x600/111/fff?text=Profile+Image'" alt="Profile">
             </div>
             <div class="about-text">
-                <h2>About Me </h2>
+                <h2>About Me </h2>
                 <p>
                     안녕하세요.<br>
                     다양한 툴을 조종하고<br>
@@ -701,16 +684,17 @@
         </div>
     </section>
 
-    <!-- 보너스 섹션 -->
+    <!-- 보너스 섹션 (수정됨) -->
     <section id="bonus">
+        <!-- 배경 영상 -->
+        <video autoplay loop muted playsinline class="bonus-bg-video">
+            <source src="/img/mov.mp4" type="video/mp4">
+        </video>
+        <!-- 오버레이 삭제됨 -->
+        
         <div class="bonus-content">
-            <div class="bonus-left">
-                <h2>예비 집사 능력 고사</h2>
-            </div>
-            <div class="bonus-right">
-                <img src="/img/test.png" onerror="this.src='https://placehold.co/200x250/444/fff?text=Test+Thumbnail'" alt="예비집사능력고사">
-                <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">테스트 시작하기 ▶</a>
-            </div>
+            <!-- 텍스트/이미지 삭제됨, 버튼만 남음 -->
+            <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">테스트 시작하기 ▶</a>
         </div>
     </section>
 
@@ -997,6 +981,7 @@
                 const r = Math.floor(Math.random() * 100) + 155;
                 const g = Math.floor(Math.random() * 100) + 155;
                 const b = Math.floor(Math.random() * 100) + 155;
+                item.style.setProperty('--hover-border-color', `rgba(${r}, ${g}, ${b}, 0.8)`);
                 item.style.setProperty('--hover-color', `rgba(${r}, ${g}, ${b}, 0.8)`);
             });
         }
@@ -1131,6 +1116,25 @@
         const STAGGER_AMOUNT = 0.08; 
         let interactionTimer; 
 
+        // [수정된 부분] 갤러리 아이템 이벤트 리스너
+        items.forEach((item, index) => {
+            const src = item.dataset.src;
+            
+            // 호버 시 배경 전환 + 타이틀 영구 숨김
+            item.addEventListener("mouseenter", () => { 
+                updateGalleryBackground(src);
+                
+                // 갤러리 타이틀 숨김 (다시 나타나게 하는 코드를 제거하여 영구적으로 사라짐)
+                gsap.to(".gallery-title", { autoAlpha: 0, duration: 0.3, overwrite: true });
+            });
+            
+            // mouseleave 이벤트에서 타이틀을 복구하는 코드를 제거했습니다.
+            // 캡션 텍스트를 숨기는 코드도 제거했습니다 (CSS 기본 호버 효과 유지).
+
+            item.addEventListener("click", () => { openModal(src); });
+        });
+
+        // (기존 스크롤 트리거 관련 코드 유지)
         items.forEach((item, index) => {
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
@@ -1152,7 +1156,7 @@
                 clearTimeout(interactionTimer);
                 interactionTimer = setTimeout(() => {
                     items.forEach(item => item.classList.add('interaction-ready'));
-                }, 2000);
+                }, 500); // [수정됨] 인터랙션 활성화 시간 2000 -> 500ms로 단축하여 빠른 호버 가능하게 함
             },
             onLeaveBack: () => {
                 items.forEach(item => {
@@ -1209,11 +1213,8 @@
             tempImg.src = src;
         };
 
-        items.forEach(item => {
-            const src = item.dataset.src;
-            item.addEventListener("mouseover", () => { updateGalleryBackground(src); });
-            item.addEventListener("click", () => { openModal(src); });
-        });
+        // (이 부분 중복 제거: 위에서 forEach로 이미 추가함)
+        // items.forEach(item => { ... }); 
 
         modalImage.addEventListener('click', closeModal); 
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
@@ -1249,6 +1250,15 @@
             }
         }
         createAboutStrings();
+        
+        // [NEW] Background color transition for bonus section
+        // [REMOVED] Trigger removal requested.
+        
+        // Background image fade out
+        // [REMOVED] Trigger removal requested.
+
+        // [NEW] Bonus Section Pinning
+        // [REMOVED] Pinning removal requested.
 
     </script>
 </body>
