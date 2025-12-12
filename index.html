@@ -60,7 +60,7 @@
         #about { 
             height: 100svh; 
             width: 100%;
-            background: #000; /* [수정됨] #111 -> #000 (포트폴리오 페이지 배경색과 통일) */
+            background: #000; 
             position: relative; 
             overflow: hidden; 
             z-index: 15; 
@@ -70,26 +70,22 @@
             padding: 0;
         }
 
-        /* [삭제됨] 배경 이미지 스타일 제거됨 */
-
-        /* [NEW] 배경 실 효과 스타일 수정 */
+        /* 배경 실 효과 스타일 */
         .about-strings {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            /* Flex 제거하고 자식 요소 absolute로 랜덤 배치 */
             pointer-events: none;
         }
         
         .about-string {
-            position: absolute; /* 랜덤 위치를 위해 absolute 사용 */
+            position: absolute; 
             top: 0;
-            width: 1px; /* 실 두께 */
+            width: 1px; 
             height: 100%;
-            /* background 색상은 JS에서 랜덤 지정 */
-            transform: scaleY(0); /* 처음엔 길이 0 */
-            transform-origin: top; /* 위에서 아래로 자라나도록 */
+            transform: scaleY(0); 
+            transform-origin: top; 
             transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
@@ -113,10 +109,9 @@
             align-items: center;
             
             opacity: 0;
-            /* 위에서 아래로 이동 */
             transform: translateY(-100px); 
             transition: all 1s ease;
-            transition-delay: 0.5s; /* 실이 내려오고 나서 시작 */
+            transition-delay: 0.5s; 
         }
         .about-photo img {
             width: 100%; height: 100%; object-fit: cover; 
@@ -130,26 +125,32 @@
             text-align: left;
             
             opacity: 0;
-            /* 위에서 아래로 이동 */
             transform: translateY(-100px); 
             transition: all 1s ease;
-            transition-delay: 0.7s; /* 사진보다 조금 더 늦게 */
+            transition-delay: 0.7s; 
         }
         .about-text h2 { font-size: 3rem; margin-bottom: 1.5rem; font-weight: bold; color: #fff; }
         .about-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 1rem; }
 
-        /* [활성화 상태] Trigger 클래스 */
-        .about-content.is-active .about-photo,
-        .about-content.is-active .about-text {
+        /* [수정됨] 콘텐츠 활성화 상태 (content-active 클래스로 분리) */
+        .about-content.content-active .about-photo,
+        .about-content.content-active .about-text {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* 실 애니메이션 활성화 (부모인 #about에 클래스 추가 예정) */
-        #about.is-active .about-string {
+        /* [수정됨] 실 애니메이션 활성화 상태 (strings-active 클래스로 분리) */
+        #about.strings-active .about-string {
             transform: scaleY(1);
         }
         
+        /* 실마다 딜레이를 주어 불규칙하게 내려오게 함 */
+        #about.strings-active .about-string:nth-child(1) { transition-delay: 0.1s; }
+        #about.strings-active .about-string:nth-child(2) { transition-delay: 0.3s; }
+        #about.strings-active .about-string:nth-child(3) { transition-delay: 0.0s; }
+        #about.strings-active .about-string:nth-child(4) { transition-delay: 0.4s; }
+        #about.strings-active .about-string:nth-child(5) { transition-delay: 0.2s; }
+
         /* -------------------------------------------
             📱 모바일 스타일 (About)
             ------------------------------------------- */
@@ -164,7 +165,6 @@
             .about-photo {
                 width: 100%;
                 height: 40vh; 
-                /* 모바일에서도 위에서 아래로 */
                 transform: translateY(-50px); 
             }
 
@@ -177,8 +177,8 @@
             .about-text h2 { font-size: 2rem; margin-bottom: 1rem; }
             .about-text p { font-size: 0.95rem; line-height: 1.6; }
 
-            .about-content.is-active .about-photo,
-            .about-content.is-active .about-text {
+            .about-content.content-active .about-photo,
+            .about-content.content-active .about-text {
                 transform: translateY(0);
             }
         }
@@ -550,8 +550,7 @@
             loop 
             autoplay>
         </lottie-player>
-        <h1>Final Build</h1>
-        <p>마리오네트 & 인터랙티브 갤러리</p>
+        <!-- 텍스트 삭제됨 -->
     </section>
     
     <!-- About Me 섹션 -->
@@ -728,9 +727,11 @@
         // --- [NEW] 마리오네트 실(비) 효과 ---
         const canvas = document.getElementById('rain-canvas');
         const ctx = canvas.getContext('2d');
+        const portfolioChars = "PORTFOLIO".split(""); // Text pool
         
         let canvasWidth, canvasHeight;
         let rains = [];
+        let texts = []; // Array for text drops
         
         function initRain() {
             canvasWidth = window.innerWidth;
@@ -739,11 +740,17 @@
             canvas.height = canvasHeight;
             
             rains = [];
+            texts = []; // Reset text drops
             // 화면 너비에 비례해 비의 양 조절 (밀도)
             const rainCount = Math.floor(canvasWidth * 0.1); 
+            const textCount = 15; // Number of falling text characters
             
             for(let i=0; i<rainCount; i++) {
                 rains.push(new RainDrop());
+            }
+            
+            for(let i=0; i<textCount; i++) {
+                texts.push(new TextDrop());
             }
         }
         
@@ -810,12 +817,56 @@
                 ctx.stroke();
             }
         }
+
+        class TextDrop {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvasHeight; // Random start y
+            }
+
+            reset() {
+                this.x = Math.random() * canvasWidth;
+                this.y = -Math.random() * 500; // Start higher up to stagger
+                this.text = portfolioChars[Math.floor(Math.random() * portfolioChars.length)];
+                this.fontSize = Math.floor(Math.random() * 50) + 50; // Modified to 50-100px
+
+                // Same speed params as RainDrop for consistency
+                this.slowSpeed = Math.random() * 0.5 + 0.2;
+                this.fastSpeed = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.2 + 0.1; // Slightly more visible than rain
+            }
+
+            update() {
+                const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
+                this.y += currentSpeed;
+
+                if (this.y > canvasHeight + 150) { // Buffer for large text
+                    this.reset();
+                }
+            }
+
+            draw() {
+                // Fade out immediately on scroll (disappears by 10% scroll progress)
+                let activeOpacity = this.opacity * (1 - rainMode * 10);
+                if (activeOpacity < 0) activeOpacity = 0;
+
+                const colorVal = Math.floor(rainMode * 255);
+                ctx.fillStyle = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${activeOpacity})`;
+                ctx.font = `bold ${this.fontSize}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.text, this.x, this.y);
+            }
+        }
         
         function animateRain() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             rains.forEach(rain => {
                 rain.update();
                 rain.draw();
+            });
+            texts.forEach(text => {
+                text.update();
+                text.draw();
             });
             requestAnimationFrame(animateRain);
         }
@@ -825,21 +876,28 @@
         animateRain();
         // -------------------------------------
 
+        // [NEW] Trigger for strings when half visible
+        ScrollTrigger.create({
+            trigger: "#about",
+            start: "top 50%",
+            onEnter: () => document.getElementById('about').classList.add('strings-active'),
+            onLeaveBack: () => document.getElementById('about').classList.remove('strings-active')
+        });
+
         // About 섹션 스크롤 트리거 (수정됨: 타임라인으로 변경하여 실 오퍼시티 조절)
         const aboutTl = gsap.timeline({
             scrollTrigger: {
                 trigger: "#about",
                 start: "top top",
-                end: "+=2000", // 1000 -> 2000으로 변경
+                end: "+=3000", // 2000 -> 3000으로 변경
                 pin: true,
                 scrub: true,
                 onEnter: () => {
-                    document.querySelector('#about').classList.add('is-active');
-                    document.querySelector('.about-content').classList.add('is-active');
+                    // Only triggers content when fully active (pinned)
+                    document.querySelector('.about-content').classList.add('content-active');
                 },
                 onLeaveBack: () => {
-                    document.querySelector('#about').classList.remove('is-active');
-                    document.querySelector('.about-content').classList.remove('is-active');
+                    document.querySelector('.about-content').classList.remove('content-active');
                 }
             }
         });
