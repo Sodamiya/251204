@@ -434,8 +434,35 @@
         }
 
 
-        footer { height: 50vh; background: #050505; justify-content: center; display: flex; align-items: center; z-index: 10; }
+        footer { 
+            height: 50vh; 
+            background: #050505; 
+            justify-content: center; 
+            display: flex; 
+            align-items: center; 
+            z-index: 10; 
+            position: relative;
+            overflow: hidden; /* 풍선이 넘치지 않게 */
+        }
 
+        /* [NEW] 풍선 스타일 (눈송이 느낌으로 수정) */
+        #balloon-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0; /* 텍스트 뒤 */
+            overflow: hidden;
+        }
+        
+        .balloon {
+            position: absolute;
+            bottom: -100px; /* 화면 아래에서 시작 */
+            border-radius: 50%;
+            /* 눈송이처럼 흰색 계열로 변경 */
+            background-color: #ffffff;
+        }
+        
         /* -------------------------------------------
             Marionette & Bubble Styles
             ------------------------------------------- */
@@ -603,7 +630,15 @@
                     <div class="bubble b-top-left"><h3>E-Commerce Platform</h3><p>쇼핑몰 리뉴얼 프로젝트</p></div>
                     <div class="bubble b-top-right"><p><strong>UIUX Designer</strong> / Figma</p></div>
                     <a href="#" class="bubble b-bottom-left" style="background: rgba(255,255,255,0.15);">기획서 바로가기</a>
-                    <a href="#" class="bubble b-bottom-right" style="background: rgba(255,255,255,0.15);">웹 사이트 바로가기</a>
+                    
+                    <!-- [수정됨] P1 웹사이트 버튼: 링크 변경 및 아이콘 추가 (사이즈 18, 두께 2.5) -->
+                    <a href="https://ddongbae-i.github.io/boj_en/" target="_blank" class="bubble b-bottom-right" style="background: rgba(255,255,255,0.15);">
+                        웹 사이트 바로가기
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
@@ -618,9 +653,22 @@
                 <div class="info-bubbles">
                     <div class="bubble b-top-left"><h3>Wellio</h3><p>가족 건강 커뮤니티 앱</p></div>
                     <div class="bubble b-top-right"><p><strong>UI/UX Designer</strong> / Figma</p></div>
-                    <!-- [수정됨] 기획서 링크 변경 및 화살표 아이콘 추가 -->
-                    <a href="https://drive.google.com/file/d/1Q3dEEmK6dWnyTHIhNxCilJ96lU17_bzO/view?usp=sharing" target="_blank" class="bubble b-bottom-left">기획서 바로가기 &#8599;</a>
-                    <a href="#" class="bubble b-bottom-right">앱 실행해보기</a>
+                    
+                    <!-- [수정됨] P2 버튼: 아이콘 사이즈 18, 두께 2.5로 키움 -->
+                    <a href="https://drive.google.com/file/d/1Q3dEEmK6dWnyTHIhNxCilJ96lU17_bzO/view?usp=sharing" target="_blank" class="bubble b-bottom-left">
+                        기획서 바로가기 
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
+                    <a href="https://wellio-iota.vercel.app/" target="_blank" class="bubble b-bottom-right">
+                        앱 실행해보기 
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
@@ -680,9 +728,10 @@
         </div>
     </section>
 
-    <!-- [수정됨] Footer 순서 변경 및 문구 추가 -->
+    <!-- [수정됨] Footer 순서 변경 및 문구 추가 + 풍선 컨테이너 추가 -->
     <footer>
-        <div class="flex flex-col items-center gap-4">
+        <div id="balloon-container"></div> <!-- 풍선이 생성될 위치 -->
+        <div class="flex flex-col items-center gap-4 relative z-10">
             <!-- [NEW] Thank You 문구 추가 -->
             <h2 class="text-3xl font-bold text-white tracking-wider mb-2">Thank You</h2>
             <img src="/img/qr.png" onerror="this.src='https://placehold.co/150x150/333/fff?text=QR+Code'" alt="Mobile View QR Code" class="w-32 h-32 rounded-lg shadow-lg">
@@ -1156,6 +1205,62 @@
             }
         }
         createAboutStrings();
+
+        // --- [NEW] Balloon Animation Logic (Snow-like Update) ---
+        function createBalloons() {
+            const container = document.getElementById('balloon-container');
+            const balloonCount = 50; // 눈송이 느낌을 위해 개수 유지 또는 약간 증가
+
+            for (let i = 0; i < balloonCount; i++) {
+                const balloon = document.createElement('div');
+                balloon.classList.add('balloon');
+                
+                // 랜덤 속성 부여: 크기를 작게 조절 (5px ~ 20px)
+                const size = Math.random() * 15 + 5; 
+                const left = Math.random() * 100; // 0% ~ 100%
+                
+                balloon.style.width = `${size}px`;
+                balloon.style.height = `${size}px`;
+                balloon.style.left = `${left}%`;
+                
+                // 투명도 조절로 '연한' 느낌 (0.2 ~ 0.7)
+                const opacity = Math.random() * 0.5 + 0.2;
+                balloon.style.backgroundColor = `rgba(255, 255, 255, ${opacity})`;
+                
+                container.appendChild(balloon);
+            }
+
+            // GSAP 애니메이션 (ScrollTrigger 연동)
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "footer",
+                    start: "top 90%", // 푸터가 보이기 시작할 때
+                    toggleActions: "restart none none reset" 
+                }
+            });
+
+            // 1. 배경색 전환: 회색(#505050) -> 검정(#000000)
+            tl.fromTo("footer", 
+                { backgroundColor: "#505050" }, 
+                { backgroundColor: "#000000", duration: 3, ease: "power1.inOut" },
+                0 // 시작 시간 0초 (동시 실행)
+            );
+
+            // 2. 풍선(눈송이) 올라가는 애니메이션
+            tl.to(".balloon", {
+                y: -window.innerHeight * 1.2, // 화면 위로 올라감
+                opacity: 0,
+                duration: "random(3, 6)", // 천천히 부드럽게
+                ease: "power1.out",
+                stagger: {
+                    amount: 2, // 순차적으로
+                    from: "random"
+                }
+            }, 0); // 배경색 전환과 동시에 시작
+        }
+        
+        // 실행
+        createBalloons();
 
     </script>
 </body>
