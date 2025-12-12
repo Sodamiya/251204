@@ -552,7 +552,7 @@
 </head>
 <body>
 
-    <!-- Hero 섹션: 캔버스 추가 -->
+    <!-- Hero 섹션 -->
     <section id="hero">
         <canvas id="rain-canvas"></canvas>
         <lottie-player 
@@ -562,16 +562,11 @@
             loop 
             autoplay>
         </lottie-player>
-        <!-- 텍스트 삭제됨 -->
     </section>
     
     <!-- About Me 섹션 -->
     <section id="about">
-        <!-- [NEW] 배경 실 효과 요소 (JS로 생성됨) -->
         <div class="about-strings"></div>
-
-        <!-- [삭제됨] 배경 이미지 div 삭제 -->
-        
         <div class="about-content">
             <div class="about-photo">
                 <img src="/img/about.JPG" onerror="this.src='https://placehold.co/400x600/111/fff?text=Profile+Image'" alt="Profile">
@@ -594,6 +589,7 @@
         </div>
     </section>
     
+    <!-- Stage 섹션 -->
     <section id="stage">
         
         <!-- P1 (500px) -->
@@ -622,7 +618,8 @@
                 <div class="info-bubbles">
                     <div class="bubble b-top-left"><h3>Wellio</h3><p>가족 건강 커뮤니티 앱</p></div>
                     <div class="bubble b-top-right"><p><strong>UI/UX Designer</strong> / Figma</p></div>
-                    <a href="#" class="bubble b-bottom-left">기획서 바로가기</a>
+                    <!-- [수정됨] 기획서 링크 변경 및 화살표 아이콘 추가 -->
+                    <a href="https://drive.google.com/file/d/1Q3dEEmK6dWnyTHIhNxCilJ96lU17_bzO/view?usp=sharing" target="_blank" class="bubble b-bottom-left">기획서 바로가기 &#8599;</a>
                     <a href="#" class="bubble b-bottom-right">앱 실행해보기</a>
                 </div>
             </div>
@@ -630,17 +627,16 @@
 
     </section>
 
+    <!-- Gallery 섹션 -->
     <section id="gallery-stage">
         <div class="gallery-bg">
             <img id="bg-img" src="https://placehold.co/1920x1080/111/111?text=%20" alt="Background" style="opacity: 1;">
             <div class="overlay"></div>
         </div>
 
-        <!-- [NEW] 갤러리 타이틀 추가 -->
         <h2 class="gallery-title">Gallery</h2>
 
         <div class="gallery-content">
-            <!-- 갤러리 이미지들은 로컬 경로로 복원되었습니다. -->
             <div class="word-item" data-type="image" data-src="/img/p1.jpg">
                 <img src="/img/p1.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P1'" alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
@@ -684,26 +680,27 @@
         </div>
     </section>
 
-    <!-- 보너스 섹션 (수정됨) -->
+    <!-- [수정됨] Footer 순서 변경 및 문구 추가 -->
+    <footer>
+        <div class="flex flex-col items-center gap-4">
+            <!-- [NEW] Thank You 문구 추가 -->
+            <h2 class="text-3xl font-bold text-white tracking-wider mb-2">Thank You</h2>
+            <img src="/img/qr.png" onerror="this.src='https://placehold.co/150x150/333/fff?text=QR+Code'" alt="Mobile View QR Code" class="w-32 h-32 rounded-lg shadow-lg">
+            <p class="text-gray-400 text-sm tracking-widest uppercase">Mobile</p>
+        </div>
+    </footer>
+
+    <!-- [수정됨] 보너스 섹션 위치를 Footer 아래로 이동 -->
     <section id="bonus">
         <!-- 배경 영상 -->
         <video autoplay loop muted playsinline class="bonus-bg-video">
             <source src="/img/mov.mp4" type="video/mp4">
         </video>
-        <!-- 오버레이 삭제됨 -->
         
         <div class="bonus-content">
-            <!-- 텍스트/이미지 삭제됨, 버튼만 남음 -->
             <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">집사 테스트 시작하기 ▶</a>
         </div>
     </section>
-
-    <footer>
-        <div class="flex flex-col items-center gap-4">
-            <img src="/img/qr.png" onerror="this.src='https://placehold.co/150x150/333/fff?text=QR+Code'" alt="Mobile View QR Code" class="w-32 h-32 rounded-lg shadow-lg">
-            <p class="text-gray-400 text-sm tracking-widest uppercase">Mobile</p>
-        </div>
-    </footer>
 
     <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90 flex items-center justify-center p-4" aria-modal="true" role="dialog">
         <div id="loading-spinner" class="text-white flex flex-col items-center">
@@ -724,17 +721,15 @@
         ScrollTrigger.normalizeScroll(true); 
         ScrollTrigger.config({ ignoreMobileResize: true });
         
-        // --- 0. Hero 색상 전환 및 Pin (추가된 부분) ---
-        // 전역 변수로 스크롤 상태 추적 (0: 처음, 1: 전환 완료)
+        // --- 0. Hero 색상 전환 및 Pin ---
         let rainMode = 0; 
-        let rainControl = { ratio: 1 }; // [NEW] Control object for rain quantity
+        let rainControl = { ratio: 1 }; 
 
-        // 타임라인으로 변경하여 배경색 전환과 캔버스 오퍼시티 페이드 아웃을 연결
         const heroTl = gsap.timeline({
             scrollTrigger: {
                 trigger: "#hero",
                 start: "top top",
-                end: "+=4000", // 스크롤 길이 늘림 (2500 -> 4000)
+                end: "+=4000", 
                 scrub: 0.5,
                 pin: true, 
                 onUpdate: (self) => {
@@ -743,20 +738,18 @@
             }
         });
 
-        // 1. 배경색은 전체 구간 동안 서서히 #000000으로 변경
         heroTl.to("#hero", { backgroundColor: "#000000", duration: 1 })
-              // [수정됨] 로티 애니메이션 사라지는 속도를 늦춤 (duration: 0.1 -> 0.4, 시작점 0.2 -> 0.1)
               .to("lottie-player", { opacity: 0, autoAlpha: 0, duration: 0.4 }, 0.1)
-              .to(rainControl, { ratio: 0, duration: 0.5 }, 0.5); // Decrease rain from 0.5 to 1.0
+              .to(rainControl, { ratio: 0, duration: 0.5 }, 0.5); 
         
-        // --- [NEW] 마리오네트 실(비) 효과 ---
+        // --- 마리오네트 실(비) 효과 ---
         const canvas = document.getElementById('rain-canvas');
         const ctx = canvas.getContext('2d');
-        const portfolioChars = "PORTFOLIO".split(""); // Text pool
+        const portfolioChars = "PORTFOLIO".split(""); 
         
         let canvasWidth, canvasHeight;
         let rains = [];
-        let texts = []; // Array for text drops
+        let texts = []; 
         
         function initRain() {
             canvasWidth = window.innerWidth;
@@ -765,10 +758,9 @@
             canvas.height = canvasHeight;
             
             rains = [];
-            texts = []; // Reset text drops
-            // 화면 너비에 비례해 비의 양 조절 (밀도)
+            texts = []; 
             const rainCount = Math.floor(canvasWidth * 0.1); 
-            const textCount = 15; // Number of falling text characters
+            const textCount = 15; 
             
             for(let i=0; i<rainCount; i++) {
                 rains.push(new RainDrop());
@@ -782,37 +774,24 @@
         class RainDrop {
             constructor() {
                 this.reset();
-                // 처음 생성 시 화면 전체에 랜덤 분포
                 this.y = Math.random() * canvasHeight; 
             }
             
             reset() {
                 this.x = Math.random() * canvasWidth;
-                this.y = -Math.random() * 200; // 화면 위에서 시작
-                
-                // 마리오네트 실 느낌: 길이를 길게 (100px ~ 300px)
+                this.y = -Math.random() * 200; 
                 this.baseLength = Math.random() * 200 + 100; 
-                
-                // 속도 변수 (느림 -> 빠름)
-                this.slowSpeed = Math.random() * 0.5 + 0.2; // 눈(원)일 때 속도
-                this.fastSpeed = Math.random() * 2 + 1;     // 비(선)일 때 속도
-                
+                this.slowSpeed = Math.random() * 0.5 + 0.2; 
+                this.fastSpeed = Math.random() * 2 + 1;     
                 this.opacity = Math.random() * 0.2 + 0.05; 
-                
-                // [NEW] Random pastel color for rain
-                this.r = Math.floor(Math.random() * 100) + 155; // 155-255 for bright pastel
+                this.r = Math.floor(Math.random() * 100) + 155; 
                 this.g = Math.floor(Math.random() * 100) + 155;
                 this.b = Math.floor(Math.random() * 100) + 155;
             }
             
             update() {
-                // rainMode(0~1)에 따라 속도 보간 (Interpolation)
-                // 0에 가까우면 slowSpeed, 1에 가까우면 fastSpeed
                 const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
-                
                 this.y += currentSpeed;
-                
-                // 화면 밖으로 나가면 다시 위로
                 if (this.y > canvasHeight) {
                     this.reset();
                 }
@@ -820,49 +799,27 @@
             
             draw(index, total) {
                 ctx.beginPath();
-                
-                // [NEW] Fade out logic based on rainControl.ratio
                 const minRain = 30;
                 let fadeFactor = 1;
 
                 if (index >= minRain) {
                     const countToFade = total - minRain;
-                    // normalizedIndex: 0 (index=30) to 1 (index=total-1)
                     const normalizedIndex = (index - minRain) / countToFade;
-                    
-                    // As ratio decreases from 1 to 0, higher normalizedIndex fades first.
-                    // 'distance' represents how far current ratio is above the item's threshold.
-                    // Multiplier 5 makes the fade transition smoother but distinct.
                     const distance = rainControl.ratio - normalizedIndex;
                     fadeFactor = Math.max(0, Math.min(1, distance * 5));
                 }
 
-                // Apply fadeFactor to global opacity
                 const currentOpacity = this.opacity * fadeFactor;
-                
-                // If invisible, skip drawing to save performance
                 if (currentOpacity <= 0.01) return;
                 
-                // rainMode에 따라 모양과 색상 변화
-                
-                // 1. 길이: 0일 때는 0(원형), 1일 때는 baseLength(선형)
-                // 처음엔 동그랗게 보이기 위해 길이를 거의 0으로 시작
                 const currentLength = this.baseLength * rainMode;
-                
-                // 2. 두께: 0일 때는 두껍게(눈), 1일 때는 얇게(실)
-                // 시작: 4~6px (동그라미), 끝: 0.5~2px (실)
                 const startWidth = 15;
                 const endWidth = 1;
                 const currentWidth = startWidth - (startWidth - endWidth) * rainMode;
 
-                // 3. 색상: use stored pastel RGB
-                
-                // 둥근 끝처리를 해야 길이가 0일 때 원으로 보임
                 ctx.lineCap = 'round'; 
-                
                 ctx.moveTo(this.x, this.y);
                 ctx.lineTo(this.x, this.y + currentLength);
-                
                 ctx.strokeStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${currentOpacity})`;
                 ctx.lineWidth = currentWidth;
                 ctx.stroke();
@@ -872,22 +829,18 @@
         class TextDrop {
             constructor() {
                 this.reset();
-                this.y = Math.random() * canvasHeight; // Random start y
+                this.y = Math.random() * canvasHeight; 
             }
 
             reset() {
                 this.x = Math.random() * canvasWidth;
-                this.y = -Math.random() * 500; // Start higher up to stagger
+                this.y = -Math.random() * 500; 
                 this.text = portfolioChars[Math.floor(Math.random() * portfolioChars.length)];
-                this.fontSize = Math.floor(Math.random() * 50) + 50; // Modified to 50-100px
-
-                // Same speed params as RainDrop for consistency
+                this.fontSize = Math.floor(Math.random() * 50) + 50; 
                 this.slowSpeed = Math.random() * 0.5 + 0.2;
                 this.fastSpeed = Math.random() * 2 + 1;
-                this.opacity = Math.random() * 0.2 + 0.1; // Slightly more visible than rain
-                
-                // [NEW] Random pastel color generation
-                this.r = Math.floor(Math.random() * 100) + 155; // 155-255 for bright pastel
+                this.opacity = Math.random() * 0.2 + 0.1; 
+                this.r = Math.floor(Math.random() * 100) + 155; 
                 this.g = Math.floor(Math.random() * 100) + 155;
                 this.b = Math.floor(Math.random() * 100) + 155;
             }
@@ -895,14 +848,12 @@
             update() {
                 const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
                 this.y += currentSpeed;
-
-                if (this.y > canvasHeight + 150) { // Buffer for large text
+                if (this.y > canvasHeight + 150) { 
                     this.reset();
                 }
             }
 
             draw(index, total) {
-                // Logic to keep some texts or fade all
                 const minText = 3; 
                 let fadeFactor = 1;
 
@@ -913,18 +864,13 @@
                     fadeFactor = Math.max(0, Math.min(1, distance * 5));
                 }
                 
-                // Scroll fade logic (activeOpacity) combined with sequential fade (fadeFactor)
                 let activeOpacity = this.opacity * (1 - rainMode * 10);
                 if (activeOpacity < 0) activeOpacity = 0;
-                
-                // Apply sequential fade
                 activeOpacity *= fadeFactor;
 
                 if (activeOpacity <= 0.01) return;
 
-                // [NEW] Use stored random color with calculated opacity
                 ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${activeOpacity})`;
-                
                 ctx.font = `bold ${this.fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.fillText(this.text, this.x, this.y);
@@ -933,48 +879,35 @@
         
         function animateRain() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            
-            // Loop all, pass index and total
             rains.forEach((rain, i) => {
                 rain.update();
                 rain.draw(i, rains.length);
             });
-            
             texts.forEach((text, i) => {
                 text.update();
                 text.draw(i, texts.length);
             });
-            
             requestAnimationFrame(animateRain);
         }
         
         window.addEventListener('resize', initRain);
         initRain();
         animateRain();
-        // -------------------------------------
 
-        // [NEW] Function to randomize bubble colors
+        // --- Bubble Colors ---
         function colorizeBubbles() {
             const bubbles = document.querySelectorAll('.info-bubbles .bubble');
             bubbles.forEach(bubble => {
-                // Only style if it doesn't have an inline background already set in HTML (though we can override)
-                // The prompt asks to change the bubbles to random pastel colors.
-                // Currently some have style="background: ..." inline. 
-                // We'll override or set it.
-                
-                const r = Math.floor(Math.random() * 100) + 100; // 100-200 range, slightly darker than rain for visibility on white text
+                const r = Math.floor(Math.random() * 100) + 100; 
                 const g = Math.floor(Math.random() * 100) + 100;
                 const b = Math.floor(Math.random() * 100) + 100;
-                
-                // Set background with some transparency
                 bubble.style.background = `rgba(${r}, ${g}, ${b}, 0.5)`;
                 bubble.style.border = `1px solid rgba(${r}, ${g}, ${b}, 0.8)`;
             });
         }
-        // Call immediately
         colorizeBubbles();
 
-        // [NEW] Setup random hover border color for gallery items
+        // --- Gallery Hover Colors ---
         function setupGalleryItems() {
             const items = document.querySelectorAll('.word-item');
             items.forEach(item => {
@@ -987,7 +920,7 @@
         }
         setupGalleryItems();
 
-        // [NEW] Trigger for strings when half visible
+        // --- About Section Triggers ---
         ScrollTrigger.create({
             trigger: "#about",
             start: "top 60%",
@@ -995,14 +928,12 @@
             onLeaveBack: () => document.getElementById('about').classList.remove('strings-active')
         });
 
-        // Main Pin Trigger for About
         ScrollTrigger.create({
             trigger: "#about",
             start: "top top",
             end: "+=3000",
             pin: true,
-            scrub: true, // Scrub is true for whatever timeline I might use, but here I might not need a timeline for opacity if using callbacks.
-                         // But I need to pin. ScrollTrigger can pin without a timeline.
+            scrub: true, 
             onEnter: () => {
                 document.querySelector('.about-content').classList.add('content-active');
             },
@@ -1010,16 +941,14 @@
                 document.querySelector('.about-content').classList.remove('content-active');
             },
             onLeave: () => {
-                 // Fade out strings when scroll finishes (moves to next section)
                  gsap.to(".about-strings", { opacity: 0, duration: 1 });
             },
             onEnterBack: () => {
-                 // Restore opacity if user scrolls back up into the section
                  gsap.to(".about-strings", { opacity: 1, duration: 0.5 });
             }
         });
 
-        // --- 1. 마리오네트 로직 ---
+        // --- Marionette Logic ---
         function createBalancedStrings() {
             const racks = document.querySelectorAll('.string-rack');
             const zones = [{ min: 5, max: 20 }, { min: 30, max: 45 }, { min: 55, max: 70 }, { min: 80, max: 95 }];
@@ -1055,9 +984,8 @@
         window.addEventListener('resize', () => { createBalancedStrings(); });
 
 
-        // --- 2. 마리오네트 타임라인 (수정됨: P3 관련 애니메이션 제거 및 길이 조정) ---
+        // --- Marionette Timeline ---
         const tl = gsap.timeline({
-            // [수정됨] 프로젝트 하나가 줄어들었으므로 스크롤 길이 단축 (8000 -> 5500)
             scrollTrigger: { trigger: "#stage", start: "top top", end: "+=5500", pin: true, scrub: 1 }
         });
 
@@ -1080,10 +1008,8 @@
             .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
             .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
             
-            // [수정됨] P3 애니메이션 삭제됨
 
-
-        // --- 3. 물리 엔진 (Ticker) ---
+        // --- Physics Engine ---
         const groups = document.querySelectorAll(".marionette-group");
         const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 }; 
 
@@ -1111,30 +1037,22 @@
         });
 
 
-        // --- 4. 갤러리 섹션 로직 ---
+        // --- Gallery Logic ---
         const items = document.querySelectorAll(".word-item");
         const STAGGER_AMOUNT = 0.08; 
         let interactionTimer; 
 
-        // [수정된 부분] 갤러리 아이템 이벤트 리스너
         items.forEach((item, index) => {
             const src = item.dataset.src;
             
-            // 호버 시 배경 전환 + 타이틀 영구 숨김
             item.addEventListener("mouseenter", () => { 
                 updateGalleryBackground(src);
-                
-                // 갤러리 타이틀 숨김 (다시 나타나게 하는 코드를 제거하여 영구적으로 사라짐)
                 gsap.to(".gallery-title", { autoAlpha: 0, duration: 0.3, overwrite: true });
             });
             
-            // mouseleave 이벤트에서 타이틀을 복구하는 코드를 제거했습니다.
-            // 캡션 텍스트를 숨기는 코드도 제거했습니다 (CSS 기본 호버 효과 유지).
-
             item.addEventListener("click", () => { openModal(src); });
         });
 
-        // (기존 스크롤 트리거 관련 코드 유지)
         items.forEach((item, index) => {
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
@@ -1156,7 +1074,7 @@
                 clearTimeout(interactionTimer);
                 interactionTimer = setTimeout(() => {
                     items.forEach(item => item.classList.add('interaction-ready'));
-                }, 500); // [수정됨] 인터랙션 활성화 시간 2000 -> 500ms로 단축하여 빠른 호버 가능하게 함
+                }, 500); 
             },
             onLeaveBack: () => {
                 items.forEach(item => {
@@ -1168,7 +1086,7 @@
             toggleActions: "play none none reverse"
         });
 
-        // (3) 모달 및 배경 로직
+        // --- Modal & Background Logic ---
         const galleryBgImg = document.getElementById("bg-img");
         const modal = document.getElementById('image-modal');
         const modalContentWrapper = document.getElementById('modal-content-wrapper');
@@ -1179,10 +1097,10 @@
              if (galleryBgImg.src.includes(src)) { return; }
              gsap.killTweensOf(galleryBgImg);
              gsap.to(galleryBgImg, { 
-                 opacity: 0, duration: 0.2, filter: 'blur(5px)', // [수정됨] 0.3s -> 0.2s
+                 opacity: 0, duration: 0.2, filter: 'blur(5px)', 
                  onComplete: () => {
                      galleryBgImg.src = src;
-                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.4, filter: 'blur(0px)' }); // [수정됨] 0.7s -> 0.4s
+                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.4, filter: 'blur(0px)' }); 
              }});
         };
 
@@ -1213,52 +1131,31 @@
             tempImg.src = src;
         };
 
-        // (이 부분 중복 제거: 위에서 forEach로 이미 추가함)
-        // items.forEach(item => { ... }); 
-
         modalImage.addEventListener('click', closeModal); 
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
 
-        // [NEW] About Section - Dynamic Random Strings
+        // --- About Section Strings ---
         function createAboutStrings() {
             const container = document.querySelector('.about-strings');
-            container.innerHTML = ''; // Clear static elements
+            container.innerHTML = ''; 
             
-            const stringCount = 10; // Number of strings
+            const stringCount = 10; 
 
             for (let i = 0; i < stringCount; i++) {
                 const str = document.createElement('div');
                 str.classList.add('about-string');
-                
-                // Random left position (0% - 100%)
                 str.style.left = Math.random() * 100 + '%';
-                
-                // Random Color with low opacity (Pastel-ish or randomized RGB)
-                const r = Math.floor(Math.random() * 155) + 100; // 100-255 (lighter)
+                const r = Math.floor(Math.random() * 155) + 100; 
                 const g = Math.floor(Math.random() * 155) + 100;
                 const b = Math.floor(Math.random() * 155) + 100;
-                
-                // [Modified] Random opacity between 0.1 and 0.5
                 const opacity = (Math.random() * 0.4 + 0.1).toFixed(2); 
                 str.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`; 
-                
-                // Random animation delay (0s - 1s) for staggered effect
                 str.style.transitionDelay = Math.random() * 1 + 's';
-                
                 container.appendChild(str);
             }
         }
         createAboutStrings();
-        
-        // [NEW] Background color transition for bonus section
-        // [REMOVED] Trigger removal requested.
-        
-        // Background image fade out
-        // [REMOVED] Trigger removal requested.
-
-        // [NEW] Bonus Section Pinning
-        // [REMOVED] Pinning removal requested.
 
     </script>
 </body>
