@@ -1,603 +1,36 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Portfolio</title>
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
+
     <!-- Lottie Player 라이브러리 -->
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
-    <style>
-        /* --- 기본 설정 --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #0a0a0a; color: #fff; font-family: sans-serif; overflow-x: hidden; }
-        a { color: inherit; text-decoration: none; }
-
-        section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
-        
-        #hero { 
-            height: 100svh; 
-            background-color: #505050; /* 초기 배경색 */
-            justify-content: center; 
-            z-index: 10;
-            gap: 1.5rem; 
-            position: relative;
-            overflow: hidden; /* 캔버스 오버플로우 방지 */
-        }
-        
-        /* 비 내리는 효과 캔버스 (배경) */
-        #rain-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1; /* 배경 바로 위 */
-            pointer-events: none;
-        }
-
-        /* 로티 및 텍스트는 캔버스 위에 위치 */
-        #hero lottie-player, #hero h1, #hero p {
-            position: relative;
-            z-index: 10;
-        }
-
-        /* 로티 플레이어 스타일 (크기 2배로 수정됨) */
-        #hero lottie-player {
-            width: 600px;
-            height: 600px;
-            max-width: 80vw; 
-            max-height: 80vw;
-        }
-
-        /* -------------------------------------------
-            About Me 섹션 스타일
-            ------------------------------------------- */
-        #about { 
-            height: 100svh; 
-            width: 100%;
-            background: #000; 
-            position: relative; 
-            overflow: hidden; 
-            z-index: 15; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-        }
-
-        /* 배경 실 효과 스타일 */
-        .about-strings {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .about-string {
-            position: absolute; 
-            top: 0;
-            width: 1px; 
-            height: 100%;
-            transform: scaleY(0); 
-            transform-origin: top; 
-            transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* 콘텐츠 래퍼 */
-        .about-content {
-            position: relative; z-index: 2;
-            width: 90%; max-width: 1200px; height: 80%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4rem; 
-        }
-
-        /* 왼쪽: 사진 영역 */
-        .about-photo {
-            flex: 1;
-            height: 100%;
-            max-height: 600px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            
-            opacity: 0;
-            transform: translateY(-100px); 
-            transition: all 1s ease;
-            transition-delay: 0.5s; 
-        }
-        .about-photo img {
-            width: 100%; height: 100%; object-fit: cover; 
-            border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        /* 오른쪽: 텍스트 영역 */
-        .about-text {
-            flex: 1;
-            text-align: left;
-            
-            opacity: 0;
-            transform: translateY(-100px); 
-            transition: all 1s ease;
-            transition-delay: 0.7s; 
-        }
-        .about-text h2 { font-size: 3rem; margin-bottom: 1.5rem; font-weight: bold; color: #fff; }
-        .about-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 1rem; }
-
-        /* [활성화 상태] Trigger 클래스 */
-        .about-content.content-active .about-photo,
-        .about-content.content-active .about-text {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 실 애니메이션 활성화 (부모인 #about에 클래스 추가 예정) */
-        #about.strings-active .about-string {
-            transform: scaleY(1);
-        }
-        
-        /* 실마다 딜레이를 주어 불규칙하게 내려오게 함 */
-        #about.strings-active .about-string:nth-child(1) { transition-delay: 0.1s; }
-        #about.strings-active .about-string:nth-child(2) { transition-delay: 0.3s; }
-        #about.strings-active .about-string:nth-child(3) { transition-delay: 0.0s; }
-        #about.strings-active .about-string:nth-child(4) { transition-delay: 0.4s; }
-        #about.strings-active .about-string:nth-child(5) { transition-delay: 0.2s; }
-
-        /* -------------------------------------------
-            📱 모바일 스타일 (About)
-            ------------------------------------------- */
-        @media (max-width: 768px) {
-            .about-content {
-                flex-direction: column; 
-                gap: 2rem;
-                height: auto;
-                padding: 50px 0;
-            }
-
-            .about-photo {
-                width: 100%;
-                height: 40vh; 
-                transform: translateY(-50px); 
-            }
-
-            .about-text {
-                width: 100%;
-                text-align: center; 
-                transform: translateY(-50px); 
-                padding: 0 1rem;
-            }
-            .about-text h2 { font-size: 2rem; margin-bottom: 1rem; }
-            .about-text p { font-size: 0.95rem; line-height: 1.6; }
-
-            .about-content.content-active .about-photo,
-            .about-content.content-active .about-text {
-                transform: translateY(0);
-            }
-        }
-
-
-        /* 프로젝트 스테이지 (Pinned) */
-        #stage {
-            height: 100svh; 
-            width: 100%;
-            background-color: #000;
-            overflow: hidden; 
-            position: relative;
-            perspective: 1000px;
-            z-index: 15; 
-        }
-
-        /* 갤러리 섹션 */
-        #gallery-stage {
-            height: 100svh; 
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            /* flex-direction: column 제거하여 중앙 정렬 유지, 타이틀은 absolute로 처리 */
-            justify-content: center;
-            align-items: center;
-            background: #000;
-            z-index: 20;
-            padding: 50px 20px; 
-        }
-
-        /* 배경 (이미지) */
-        .gallery-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-        }
-        .gallery-bg img {
-            width: 100%; height: 100%; object-fit: cover; 
-        }
-        .gallery-bg .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-        }
-
-        /* [NEW] 갤러리 타이틀 스타일 (absolute로 상단 배치) */
-        .gallery-title {
-            position: absolute; 
-            top: 50px; /* 상단 여백 */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            font-size: 3rem; 
-            font-weight: bold; 
-            color: #fff; 
-            margin-bottom: 0;
-            text-align: center;
-        }
-
-        /* 텍스트 리스트 */
-        .gallery-content {
-            position: relative; z-index: 2; display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 1.5rem;
-            max-width: 1200px;
-            width: 100%;
-        }
-
-        /* 썸네일/피드 스타일 */
-        .word-item {
-            cursor: pointer;
-            background-color: #1a1a1a; 
-            /* border 대신 inset box-shadow 사용 (안쪽 스트로크) */
-            border: none;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-
-            border-radius: 8px;
-            overflow: hidden;
-            
-            position: relative;
-            text-align: center;
-            
-            opacity: 0; 
-            transform: translateY(100px) scale(0.9);
-            
-            /* border-color 대신 box-shadow 트랜지션 적용 */
-            transition: transform 0.3s ease, box-shadow 0.2s ease-out; 
-            will-change: transform, opacity;
-
-            pointer-events: none;
-        }
-        
-        /* 가상 요소를 이용한 완벽한 안쪽 테두리 구현 */
-        .word-item::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            pointer-events: none; 
-            z-index: 10; 
-            transition: border-color 0.2s ease-out;
-        }
-        
-        .word-item.interaction-ready {
-            pointer-events: auto;
-        }
-        
-        .word-item.is-active {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1), 
-                        opacity 1.2s ease-out, 
-                        box-shadow 0.2s ease-out;
-            transition-delay: var(--item-delay);
-        }
-        
-        /* 호버 시 테두리 색상 변경 */
-        .word-item:hover::after {
-            border-color: var(--hover-border-color, rgba(255, 255, 255, 0.5)); 
-        }
-
-        .word-item:hover { 
-            transform: scale(1.02); 
-            box-shadow: none;
-        }
-
-        .thumbnail-img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            aspect-ratio: 16/10; 
-            display: block;
-            transition: opacity 0.3s ease;
-        }
-        .word-item:hover .thumbnail-img {
-            opacity: 0.7;
-        }
-
-        .thumbnail-caption {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 0.5rem 0.5rem;
-            font-size: 1rem;
-            font-weight: normal; 
-            color: #fff; 
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            z-index: 11; 
-        }
-        
-        /* 호버 시 캡션 배경 및 글자색 변경 */
-        .word-item:hover .thumbnail-caption {
-            background-color: var(--hover-color, rgba(255, 255, 255, 0.8));
-            color: #333; 
-        }
-        
-        .modal-enter { opacity: 0; transform: scale(0.9); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-
-        @media (max-width: 1024px) {
-            .gallery-content { grid-template-columns: repeat(4, 1fr); }
-            .thumbnail-caption { font-size: 0.9rem; }
-            /* 태블릿 이하에서 타이틀 숨김 */
-            .gallery-title { display: none; }
-        }
-        @media (max-width: 768px) {
-            .gallery-content { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-            .thumbnail-caption { font-size: 0.8rem; padding: 0.4rem; }
-            /* 모바일에서도 숨김 */
-            .gallery-title { display: none; }
-        }
-        @media (max-width: 480px) {
-            .gallery-content { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-            .thumbnail-caption { font-size: 0.7rem; padding: 0.3rem; }
-        }
-
-        /* -------------------------------------------
-            보너스 섹션 스타일 (수정됨)
-            ------------------------------------------- */
-        #bonus {
-            width: 100%;
-            /* 화면 가득 채움 -> 400px로 변경 (수정됨) */
-            height: 400px;
-            /* 요청한 배경색 */
-            background-color: #70794B; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0; 
-            z-index: 25;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* 배경 비디오 스타일 */
-        .bonus-bg-video {
-            position: absolute;
-            bottom: 0; /* 바텀 고정 */
-            left: 0;
-            width: 100%; /* 가로 맞춤 */
-            height: auto; /* 높이 오토 (비율 유지) */
-            object-fit: cover; /* 필요 시 꽉 차게 */
-            z-index: 0;
-        }
-
-        /* 콘텐츠 래퍼 */
-        .bonus-content {
-            position: relative;
-            z-index: 2; /* 영상보다 위에 표시 */
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 레트로 픽셀 아트 스타일 버튼 */
-        .bonus-btn {
-            display: inline-block;
-            padding: 16px 50px;
-            background-color: #FFB347; 
-            color: #fff;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-decoration: none;
-            border: 4px solid #4A332A; 
-            border-radius: 0px; 
-            box-shadow: 0px 6px 0px #4A332A; 
-            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
-        }
-
-        .bonus-btn:hover {
-            background-color: #FFC06E; 
-            transform: translateY(2px); 
-            box-shadow: 0px 4px 0px #4A332A; 
-        }
-
-        .bonus-btn:active {
-            transform: translateY(6px); 
-            box-shadow: none; 
-        }
-
-        /* 📱 모바일 대응 (보너스 섹션) */
-        @media (max-width: 768px) {
-            .bonus-btn {
-                padding: 15px 35px;
-                font-size: 1rem;
-            }
-        }
-
-
-        footer { 
-            height: 50vh; 
-            background: #050505; 
-            justify-content: center; 
-            display: flex; 
-            align-items: center; 
-            z-index: 10; 
-            position: relative;
-            overflow: hidden; /* 풍선이 넘치지 않게 */
-        }
-
-        /* [NEW] 풍선 스타일 (눈송이 느낌으로 수정) */
-        #balloon-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0; /* 텍스트 뒤 */
-            overflow: hidden;
-        }
-        
-        .balloon {
-            position: absolute;
-            bottom: -100px; /* 화면 아래에서 시작 */
-            border-radius: 50%;
-            /* 눈송이처럼 흰색 계열로 변경 */
-            background-color: #ffffff;
-        }
-        
-        /* -------------------------------------------
-            Marionette & Bubble Styles
-            ------------------------------------------- */
-        .marionette-group {
-            position: absolute; top: 0; left: 50%; width: 2px; height: 100vh; pointer-events: none; will-change: transform, opacity, filter; z-index: 5; opacity: 0; visibility: hidden; 
-        }
-
-        .pendulum { position: absolute; top: 0; left: 0; width: auto; display: flex; flex-direction: column; align-items: center; transform-origin: center top; }
-        .string-rack { position: relative; width: 100%; }
-        .string { position: absolute; top: 0; height: 100%; width: 1px; background: rgba(255, 255, 255, 0.3); }
-
-        .mockup-wrapper { position: relative; z-index: 2; margin-top: 0; }
-        .mockup-img { display: block; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); object-fit: contain; }
-        
-        .p1 .mockup-img { width: 500px; height: auto; }
-        .p2 .mockup-img { width: 300px; height: auto; }
-
-        .info-bubbles { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 1000px; height: 600px; pointer-events: none; z-index: 10; }
-        .bubble { position: absolute; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 250px; opacity: 0; visibility: hidden; transition: transform 0.3s ease, background 0.3s ease; }
-        a.bubble { pointer-events: auto; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        a.bubble:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-3px); }
-        .bubble h3 { font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
-        .bubble p { font-size: 0.9rem; line-height: 1.5; color: #ddd; margin: 0; }
-        
-        .b-top-left { top: 10%; left: 0; }
-        /* [수정됨] 텍스트가 길어질 경우를 대비해 max-width를 400px로 늘림 */
-        .b-top-right { top: 10%; right: 0; text-align: right; max-width: 400px; }
-        .b-bottom-left { bottom: 15%; left: 20px; }
-        .b-bottom-right { bottom: 15%; right: 20px; }
-
-
-        /* -------------------------------------------
-            📱 모바일 스타일 오버라이드 
-            ------------------------------------------- */
-        @media (max-width: 768px) {
-            .marionette-group {
-                position: absolute; left: 0; top: 0; 
-                width: 100% !important; 
-                height: 100vh;
-                padding: 0;
-            }
-
-            .pendulum { 
-                position: relative; 
-                width: 100%; 
-                height: 100%; 
-                display: block; 
-            }
-
-            /* 이미지 상단 고정 */
-            .mockup-wrapper { 
-                position: absolute;
-                top: 20%; 
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                margin-top: 0;
-                z-index: 5;
-            }
-
-            .p1 .mockup-img, .p2 .mockup-img { 
-                width: auto; 
-                max-width: 80vw; 
-                max-height: 40vh; 
-                object-fit: contain; 
-            }
-
-            /* 버튼 하단 고정 */
-            .info-bubbles { 
-                position: absolute; 
-                top: auto !important; 
-                bottom: 15% !important; 
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                
-                width: 90vw; 
-                height: auto; 
-                margin: 0;
-                padding: 0;
-                
-                display: flex; 
-                flex-direction: column; 
-                gap: 10px; 
-                align-items: center; 
-                z-index: 10;
-            }
-
-            .bubble { 
-                position: relative !important; 
-                top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; 
-                width: 100%; 
-                max-width: 320px; 
-                text-align: center; 
-                padding: 12px 15px; 
-            }
-            
-            .b-top-right { text-align: center; }
-            .info-bubbles .bubble:nth-child(n+2) { display: flex; align-items: center; justify-content: center; min-height: 50px; }
-
-            /* 줄(String) */
-            .string-rack { 
-                position: absolute; 
-                top: 0; 
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 0; 
-                opacity: 0.5; 
-                height: 50vh !important; 
-            }
-        }
-
-    </style>
 </head>
+
 <body>
 
     <!-- Hero 섹션 -->
     <section id="hero">
         <canvas id="rain-canvas"></canvas>
-        <lottie-player 
-            src="/img/ani.json" 
-            background="transparent" 
-            speed="1" 
-            loop 
-            autoplay>
+        <lottie-player src="./img/ani.json" background="transparent" speed="1" loop autoplay>
         </lottie-player>
     </section>
-    
+
     <!-- About Me 섹션 -->
     <section id="about">
         <div class="about-strings"></div>
         <div class="about-content">
             <div class="about-photo">
-                <img src="/img/about.JPG" onerror="this.src='https://placehold.co/400x600/111/fff?text=Profile+Image'" alt="Profile">
+                <img src="./img/about.JPG" onerror="this.src='https://placehold.co/400x600/111/fff?text=Profile+Image'"
+                    alt="Profile">
             </div>
             <div class="about-text">
                 <h2>About Me </h2>
@@ -616,35 +49,48 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Stage 섹션 -->
     <section id="stage">
-        
+
         <!-- P1 (500px) -->
         <div class="marionette-group p1">
             <div class="pendulum">
                 <div class="string-rack" data-height="30vh" data-width="500px"></div>
                 <div class="mockup-wrapper">
-                    <img src="/img/mockup1.png" onerror="this.src='https://placehold.co/500x300/333/fff?text=Project+1+Mockup'" alt="Web Project" class="mockup-img">
+                    <img src="./img/mockup1.png"
+                        onerror="this.src='https://placehold.co/500x300/333/fff?text=Project+1+Mockup'"
+                        alt="Web Project" class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left"><h3>E-Commerce Platform</h3><p>쇼핑몰 리뉴얼 프로젝트</p></div>
+                    <div class="bubble b-top-left">
+                        <h3>E-Commerce Platform</h3>
+                        <p>쇼핑몰 리뉴얼 프로젝트</p>
+                    </div>
                     <!-- [수정됨] 텍스트 변경: Vscode 추가 -->
-                    <div class="bubble b-top-right"><p><strong>UIUX Designer</strong> / Figma, Vscode</p></div>
-                    
+                    <div class="bubble b-top-right">
+                        <p><strong>UIUX Designer</strong> / Figma, Vscode</p>
+                    </div>
+
                     <!-- [수정됨] P1 기획서 링크 추가 및 화살표 아이콘 적용 -->
-                    <a href="https://www.figma.com/deck/IKsH8q4N2RwkBbUrrcagfT/%EC%A1%B0%EC%84%A0%EB%AF%B8%EB%85%80-%EA%B8%B0%ED%9A%8D%EC%84%9C?node-id=614-1700&viewport=-148%2C-157%2C0.72&t=8dY42W82rzy5i8kt-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1" target="_blank" class="bubble b-bottom-left" style="background: rgba(255,255,255,0.15);">
+                    <a href="https://www.figma.com/deck/IKsH8q4N2RwkBbUrrcagfT/%EC%A1%B0%EC%84%A0%EB%AF%B8%EB%85%80-%EA%B8%B0%ED%9A%8D%EC%84%9C?node-id=614-1700&viewport=-148%2C-157%2C0.72&t=8dY42W82rzy5i8kt-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1"
+                        target="_blank" class="bubble b-bottom-left" style="background: rgba(255,255,255,0.15);">
                         기획서 바로가기
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="inline-block ml-1 mb-0.5">
                             <line x1="7" y1="17" x2="17" y2="7"></line>
                             <polyline points="7 7 17 7 17 17"></polyline>
                         </svg>
                     </a>
-                    
+
                     <!-- [수정됨] P1 웹사이트 버튼: 링크 변경 및 아이콘 추가 (사이즈 18, 두께 2.5) -->
-                    <a href="https://ddongbae-i.github.io/boj_en/" target="_blank" class="bubble b-bottom-right" style="background: rgba(255,255,255,0.15);">
+                    <a href="https://ddongbae-i.github.io/boj_en/" target="_blank" class="bubble b-bottom-right"
+                        style="background: rgba(255,255,255,0.15);">
                         웹 사이트 바로가기
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="inline-block ml-1 mb-0.5">
                             <line x1="7" y1="17" x2="17" y2="7"></line>
                             <polyline points="7 7 17 7 17 17"></polyline>
                         </svg>
@@ -658,24 +104,36 @@
             <div class="pendulum">
                 <div class="string-rack" data-height="15vh" data-width="300px"></div>
                 <div class="mockup-wrapper">
-                    <img src="/img/mockup2.png" onerror="this.src='https://placehold.co/300x500/555/fff?text=Project+2+Mockup'" alt="Mobile App" class="mockup-img">
+                    <img src="./img/mockup2.png"
+                        onerror="this.src='https://placehold.co/300x500/555/fff?text=Project+2+Mockup'" alt="Mobile App"
+                        class="mockup-img">
                 </div>
                 <div class="info-bubbles">
-                    <div class="bubble b-top-left"><h3>Wellio</h3><p>가족 건강 커뮤니티 앱</p></div>
+                    <div class="bubble b-top-left">
+                        <h3>Wellio</h3>
+                        <p>가족 건강 커뮤니티 앱</p>
+                    </div>
                     <!-- [수정됨] 텍스트 변경: Vscode 추가 -->
-                    <div class="bubble b-top-right"><p><strong>UI/UX Designer</strong> / Figma, Vscode</p></div>
-                    
+                    <div class="bubble b-top-right">
+                        <p><strong>UI/UX Designer</strong> / Figma, Vscode</p>
+                    </div>
+
                     <!-- [수정됨] P2 버튼: 아이콘 사이즈 18, 두께 2.5로 키움 -->
-                    <a href="https://www.figma.com/deck/qOfMjVT2phXFlat17Ra5F3/-AI-%EC%B1%97%EB%B4%87%EC%A7%80%EC%9B%90-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0--%EA%B2%B0%EA%B3%BC%EB%B3%B4%EA%B3%A0%EC%84%9C_%EB%B3%B4%EB%9E%8C3%EC%A1%B0--Wellio---Copy-?node-id=7270-2678&t=yXsOqAnCdIiMy8az-1" target="_blank" class="bubble b-bottom-left">
-                        기획서 바로가기 
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                    <a href="https://www.figma.com/deck/qOfMjVT2phXFlat17Ra5F3/-AI-%EC%B1%97%EB%B4%87%EC%A7%80%EC%9B%90-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0--%EA%B2%B0%EA%B3%BC%EB%B3%B4%EA%B3%A0%EC%84%9C_%EB%B3%B4%EB%9E%8C3%EC%A1%B0--Wellio---Copy-?node-id=7270-2678&t=yXsOqAnCdIiMy8az-1"
+                        target="_blank" class="bubble b-bottom-left">
+                        기획서 바로가기
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="inline-block ml-1 mb-0.5">
                             <line x1="7" y1="17" x2="17" y2="7"></line>
                             <polyline points="7 7 17 7 17 17"></polyline>
                         </svg>
                     </a>
                     <a href="https://wellio-iota.vercel.app/" target="_blank" class="bubble b-bottom-right">
-                        앱 실행해보기 
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-1 mb-0.5">
+                        앱 실행해보기
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="inline-block ml-1 mb-0.5">
                             <line x1="7" y1="17" x2="17" y2="7"></line>
                             <polyline points="7 7 17 7 17 17"></polyline>
                         </svg>
@@ -696,44 +154,56 @@
         <h2 class="gallery-title">Gallery</h2>
 
         <div class="gallery-content">
-            <div class="word-item" data-type="image" data-src="/img/p1.jpg">
-                <img src="/img/p1.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P1'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p1.jpg">
+                <img src="./img/p1.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P1'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p2.jpg">
-                <img src="/img/p2.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P2'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p2.jpg">
+                <img src="./img/p2.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P2'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p4.png">
-                <img src="/img/p4.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P4+Character'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p4.png">
+                <img src="./img/p4.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P4+Character'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">게임 캐릭터 디자인</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p3.jpg">
-                <img src="/img/p3.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P3'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p3.jpg">
+                <img src="./img/p3.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P3'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p5.jpg">
-                <img src="/img/p5.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P5'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p5.jpg">
+                <img src="./img/p5.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P5'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p6.jpg">
-                <img src="/img/p6.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P6'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p6.jpg">
+                <img src="./img/p6.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P6'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p8.png">
-                <img src="/img/p8.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P8+Character'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p8.png">
+                <img src="./img/p8.png" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P8+Character'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">개인 캐릭터 디자인</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p7.jpg">
-                <img src="/img/p7.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P7'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p7.jpg">
+                <img src="./img/p7.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P7'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg">
-                <img src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Book+Illustration'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image"
+                data-src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg">
+                <img src="https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788969021915.jpg"
+                    onerror="this.src='https://placehold.co/400x250/333/fff?text=Book+Illustration'" alt="Thumbnail"
+                    class="thumbnail-img">
                 <div class="thumbnail-caption">도서 컬러 삽화</div>
             </div>
-            <div class="word-item" data-type="image" data-src="/img/p10.jpg">
-                <img src="/img/p10.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P10'" alt="Thumbnail" class="thumbnail-img">
+            <div class="word-item" data-type="image" data-src="./img/p10.jpg">
+                <img src="./img/p10.jpg" onerror="this.src='https://placehold.co/400x250/333/fff?text=Art+P10'"
+                    alt="Thumbnail" class="thumbnail-img">
                 <div class="thumbnail-caption">신문 흑백 삽화</div>
             </div>
         </div>
@@ -745,7 +215,8 @@
         <div class="flex flex-col items-center gap-4 relative z-10">
             <!-- [NEW] Thank You 문구 추가 -->
             <h2 class="text-3xl font-bold text-white tracking-wider mb-2">Thank You</h2>
-            <img src="/img/qr.png" onerror="this.src='https://placehold.co/150x150/333/fff?text=QR+Code'" alt="Mobile View QR Code" class="w-32 h-32 rounded-lg shadow-lg">
+            <img src="./img/qr.png" onerror="this.src='https://placehold.co/150x150/333/fff?text=QR+Code'"
+                alt="Mobile View QR Code" class="w-32 h-32 rounded-lg shadow-lg">
             <p class="text-gray-400 text-sm tracking-widest uppercase">Mobile</p>
         </div>
     </footer>
@@ -754,101 +225,107 @@
     <section id="bonus">
         <!-- 배경 영상 -->
         <video autoplay loop muted playsinline class="bonus-bg-video">
-            <source src="/img/mov.mp4" type="video/mp4">
+            <source src="./img/mov.mp4" type="video/mp4">
         </video>
-        
+
         <div class="bonus-content">
             <a href="https://testtesttest-sigma.vercel.app/" class="bonus-btn">집사 테스트 시작하기 ▶</a>
         </div>
     </section>
 
-    <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90 flex items-center justify-center p-4" aria-modal="true" role="dialog">
+    <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90 flex items-center justify-center p-4"
+        aria-modal="true" role="dialog">
         <div id="loading-spinner" class="text-white flex flex-col items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
             </svg>
             <p class="mt-2 text-sm">콘텐츠 로딩 중...</p>
         </div>
-        <div id="modal-content-wrapper" class="max-w-full max-h-full overflow-hidden flex justify-center items-center hidden">
-            <img id="modal-image" src="" alt="전체 화면 이미지" class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl transition-all duration-300 cursor-pointer">
+        <div id="modal-content-wrapper"
+            class="max-w-full max-h-full overflow-hidden flex justify-center items-center hidden">
+            <img id="modal-image" src="" alt="전체 화면 이미지"
+                class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl transition-all duration-300 cursor-pointer">
         </div>
     </div>
 
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        ScrollTrigger.normalizeScroll(true); 
+        ScrollTrigger.normalizeScroll(true);
         ScrollTrigger.config({ ignoreMobileResize: true });
-        
+
         // --- 0. Hero 색상 전환 및 Pin ---
-        let rainMode = 0; 
-        let rainControl = { ratio: 1 }; 
+        let rainMode = 0;
+        let rainControl = { ratio: 1 };
 
         const heroTl = gsap.timeline({
             scrollTrigger: {
                 trigger: "#hero",
                 start: "top top",
-                end: "+=4000", 
+                end: "+=4000",
                 scrub: 0.5,
-                pin: true, 
+                pin: true,
                 onUpdate: (self) => {
-                    rainMode = self.progress; 
+                    rainMode = self.progress;
                 }
             }
         });
 
         heroTl.to("#hero", { backgroundColor: "#000000", duration: 1 })
-              .to("lottie-player", { opacity: 0, autoAlpha: 0, duration: 0.4 }, 0.1)
-              .to(rainControl, { ratio: 0, duration: 0.5 }, 0.5); 
-        
+            .to("lottie-player", { opacity: 0, autoAlpha: 0, duration: 0.4 }, 0.1)
+            .to(rainControl, { ratio: 0, duration: 0.5 }, 0.5);
+
         // --- 마리오네트 실(비) 효과 ---
         const canvas = document.getElementById('rain-canvas');
         const ctx = canvas.getContext('2d');
-        const portfolioChars = "PORTFOLIO".split(""); 
-        
+        const portfolioChars = "PORTFOLIO".split("");
+
         let canvasWidth, canvasHeight;
         let rains = [];
-        let texts = []; 
-        
+        let texts = [];
+
         function initRain() {
             canvasWidth = window.innerWidth;
             canvasHeight = window.innerHeight;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
-            
+
             rains = [];
-            texts = []; 
-            const rainCount = Math.floor(canvasWidth * 0.1); 
-            const textCount = 15; 
-            
-            for(let i=0; i<rainCount; i++) {
+            texts = [];
+            const rainCount = Math.floor(canvasWidth * 0.1);
+            const textCount = 15;
+
+            for (let i = 0; i < rainCount; i++) {
                 rains.push(new RainDrop());
             }
-            
-            for(let i=0; i<textCount; i++) {
+
+            for (let i = 0; i < textCount; i++) {
                 texts.push(new TextDrop());
             }
         }
-        
+
         class RainDrop {
             constructor() {
                 this.reset();
-                this.y = Math.random() * canvasHeight; 
+                this.y = Math.random() * canvasHeight;
             }
-            
+
             reset() {
                 this.x = Math.random() * canvasWidth;
-                this.y = -Math.random() * 200; 
-                this.baseLength = Math.random() * 200 + 100; 
-                this.slowSpeed = Math.random() * 0.5 + 0.2; 
-                this.fastSpeed = Math.random() * 2 + 1;     
-                this.opacity = Math.random() * 0.2 + 0.05; 
-                this.r = Math.floor(Math.random() * 100) + 155; 
+                this.y = -Math.random() * 200;
+                this.baseLength = Math.random() * 200 + 100;
+                this.slowSpeed = Math.random() * 0.5 + 0.2;
+                this.fastSpeed = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.2 + 0.05;
+                this.r = Math.floor(Math.random() * 100) + 155;
                 this.g = Math.floor(Math.random() * 100) + 155;
                 this.b = Math.floor(Math.random() * 100) + 155;
             }
-            
+
             update() {
                 const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
                 this.y += currentSpeed;
@@ -856,7 +333,7 @@
                     this.reset();
                 }
             }
-            
+
             draw(index, total) {
                 ctx.beginPath();
                 const minRain = 30;
@@ -871,13 +348,13 @@
 
                 const currentOpacity = this.opacity * fadeFactor;
                 if (currentOpacity <= 0.01) return;
-                
+
                 const currentLength = this.baseLength * rainMode;
                 const startWidth = 15;
                 const endWidth = 1;
                 const currentWidth = startWidth - (startWidth - endWidth) * rainMode;
 
-                ctx.lineCap = 'round'; 
+                ctx.lineCap = 'round';
                 ctx.moveTo(this.x, this.y);
                 ctx.lineTo(this.x, this.y + currentLength);
                 ctx.strokeStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${currentOpacity})`;
@@ -889,18 +366,18 @@
         class TextDrop {
             constructor() {
                 this.reset();
-                this.y = Math.random() * canvasHeight; 
+                this.y = Math.random() * canvasHeight;
             }
 
             reset() {
                 this.x = Math.random() * canvasWidth;
-                this.y = -Math.random() * 500; 
+                this.y = -Math.random() * 500;
                 this.text = portfolioChars[Math.floor(Math.random() * portfolioChars.length)];
-                this.fontSize = Math.floor(Math.random() * 50) + 50; 
+                this.fontSize = Math.floor(Math.random() * 50) + 50;
                 this.slowSpeed = Math.random() * 0.5 + 0.2;
                 this.fastSpeed = Math.random() * 2 + 1;
-                this.opacity = Math.random() * 0.2 + 0.1; 
-                this.r = Math.floor(Math.random() * 100) + 155; 
+                this.opacity = Math.random() * 0.2 + 0.1;
+                this.r = Math.floor(Math.random() * 100) + 155;
                 this.g = Math.floor(Math.random() * 100) + 155;
                 this.b = Math.floor(Math.random() * 100) + 155;
             }
@@ -908,13 +385,13 @@
             update() {
                 const currentSpeed = this.slowSpeed + (this.fastSpeed - this.slowSpeed) * rainMode;
                 this.y += currentSpeed;
-                if (this.y > canvasHeight + 150) { 
+                if (this.y > canvasHeight + 150) {
                     this.reset();
                 }
             }
 
             draw(index, total) {
-                const minText = 3; 
+                const minText = 3;
                 let fadeFactor = 1;
 
                 if (index >= minText) {
@@ -923,7 +400,7 @@
                     const distance = rainControl.ratio - normalizedIndex;
                     fadeFactor = Math.max(0, Math.min(1, distance * 5));
                 }
-                
+
                 let activeOpacity = this.opacity * (1 - rainMode * 10);
                 if (activeOpacity < 0) activeOpacity = 0;
                 activeOpacity *= fadeFactor;
@@ -936,7 +413,7 @@
                 ctx.fillText(this.text, this.x, this.y);
             }
         }
-        
+
         function animateRain() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             rains.forEach((rain, i) => {
@@ -949,7 +426,7 @@
             });
             requestAnimationFrame(animateRain);
         }
-        
+
         window.addEventListener('resize', initRain);
         initRain();
         animateRain();
@@ -958,7 +435,7 @@
         function colorizeBubbles() {
             const bubbles = document.querySelectorAll('.info-bubbles .bubble');
             bubbles.forEach(bubble => {
-                const r = Math.floor(Math.random() * 100) + 100; 
+                const r = Math.floor(Math.random() * 100) + 100;
                 const g = Math.floor(Math.random() * 100) + 100;
                 const b = Math.floor(Math.random() * 100) + 100;
                 bubble.style.background = `rgba(${r}, ${g}, ${b}, 0.5)`;
@@ -993,7 +470,7 @@
             start: "top top",
             end: "+=3000",
             pin: true,
-            scrub: true, 
+            scrub: true,
             onEnter: () => {
                 document.querySelector('.about-content').classList.add('content-active');
             },
@@ -1001,10 +478,10 @@
                 document.querySelector('.about-content').classList.remove('content-active');
             },
             onLeave: () => {
-                 gsap.to(".about-strings", { opacity: 0, duration: 1 });
+                gsap.to(".about-strings", { opacity: 0, duration: 1 });
             },
             onEnterBack: () => {
-                 gsap.to(".about-strings", { opacity: 1, duration: 0.5 });
+                gsap.to(".about-strings", { opacity: 1, duration: 0.5 });
             }
         });
 
@@ -1014,16 +491,16 @@
             const zones = [{ min: 5, max: 20 }, { min: 30, max: 45 }, { min: 55, max: 70 }, { min: 80, max: 95 }];
 
             racks.forEach(rack => {
-                rack.innerHTML = ''; 
+                rack.innerHTML = '';
                 const isMobile = window.innerWidth <= 768;
-                
+
                 if (isMobile) {
-                    rack.style.width = '30vw'; 
+                    rack.style.width = '30vw';
                     rack.style.maxWidth = 'none';
                 } else {
-                    rack.style.width = rack.dataset.width; 
-                    rack.style.maxWidth = 'none'; 
-                    rack.style.height = rack.dataset.height; 
+                    rack.style.width = rack.dataset.width;
+                    rack.style.maxWidth = 'none';
+                    rack.style.height = rack.dataset.height;
                 }
 
                 zones.forEach(zone => {
@@ -1039,7 +516,7 @@
                 });
             });
         }
-        
+
         createBalancedStrings();
         window.addEventListener('resize', () => { createBalancedStrings(); });
 
@@ -1049,47 +526,47 @@
             scrollTrigger: { trigger: "#stage", start: "top top", end: "+=5500", pin: true, scrub: 1 }
         });
 
-        gsap.set(".marionette-group", { autoAlpha: 0 }); 
-        gsap.set(".bubble", { y: 30, autoAlpha: 0 }); 
+        gsap.set(".marionette-group", { autoAlpha: 0 });
+        gsap.set(".bubble", { y: 30, autoAlpha: 0 });
 
         const isMobile = window.innerWidth <= 768;
         const startX_Right = isMobile ? 0 : "35vw";
         const startX_Left = isMobile ? 0 : "-35vw";
-        
+
         tl.fromTo(".p1", { x: startX_Right, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
             .to(".p1 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
-            .to({}, { duration: 3 }) 
+            .to({}, { duration: 3 })
             .to(".p1 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
             .to(".p1", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 })
-            
+
             .fromTo(".p2", { x: startX_Left, scale: 0.5, filter: "blur(10px)", autoAlpha: 0 }, { x: "0%", scale: 1, filter: "blur(0px)", autoAlpha: 1, duration: 5, ease: "power1.out" })
             .to(".p2 .bubble", { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15, ease: "back.out(1.7)" })
             .to({}, { duration: 3 })
             .to(".p2 .bubble", { autoAlpha: 0, y: -30, duration: 0.5, stagger: 0.05 })
             .to(".p2", { scale: 5, autoAlpha: 0, filter: "blur(20px)", duration: 3 });
-            
+
 
         // --- Physics Engine ---
         const groups = document.querySelectorAll(".marionette-group");
-        const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 }; 
+        const CONFIG = { TENSION: 0.04, FRICTION: 0.85, FORCE: 0.015, MAX_ANGLE: 3 };
 
         groups.forEach(group => {
             const pendulum = group.querySelector(".pendulum");
             let rotation = 0; let velocity = 0; let prevX = null;
-            
+
             gsap.ticker.add(() => {
                 const currentX = group.getBoundingClientRect().left;
                 if (prevX === null || Math.abs(currentX) > 10000) { prevX = currentX; return; }
                 const dx = currentX - prevX;
                 const opacity = window.getComputedStyle(group).opacity;
-                
-                if (Math.abs(dx) < 50 && opacity > 0.1) { 
+
+                if (Math.abs(dx) < 50 && opacity > 0.1) {
                     velocity += dx * CONFIG.FORCE; velocity += -rotation * CONFIG.TENSION; velocity *= CONFIG.FRICTION; rotation += velocity;
                     if (rotation > CONFIG.MAX_ANGLE) rotation = CONFIG.MAX_ANGLE;
                     if (rotation < -CONFIG.MAX_ANGLE) rotation = -CONFIG.MAX_ANGLE;
                     if (Math.abs(rotation) < 0.01 && Math.abs(velocity) < 0.01) { rotation = 0; velocity = 0; }
                 } else { velocity = 0; }
-                
+
                 const xPercent = window.innerWidth <= 768 ? 0 : -50;
                 gsap.set(pendulum, { xPercent: xPercent, rotation: rotation });
                 prevX = currentX;
@@ -1099,42 +576,42 @@
 
         // --- Gallery Logic ---
         const items = document.querySelectorAll(".word-item");
-        const STAGGER_AMOUNT = 0.08; 
-        let interactionTimer; 
+        const STAGGER_AMOUNT = 0.08;
+        let interactionTimer;
 
         items.forEach((item, index) => {
             const src = item.dataset.src;
-            
-            item.addEventListener("mouseenter", () => { 
+
+            item.addEventListener("mouseenter", () => {
                 updateGalleryBackground(src);
                 gsap.to(".gallery-title", { autoAlpha: 0, duration: 0.3, overwrite: true });
             });
-            
+
             item.addEventListener("click", () => { openModal(src); });
         });
 
         items.forEach((item, index) => {
             item.style.setProperty('--item-delay', `${index * STAGGER_AMOUNT}s`);
         });
-        
+
         ScrollTrigger.create({
             trigger: "#gallery-stage",
             start: "top top",
-            end: "+=1500", 
+            end: "+=1500",
             pin: true,
-            scrub: true 
+            scrub: true
         });
 
         ScrollTrigger.create({
             trigger: "#gallery-stage",
-            start: "top 60%", 
+            start: "top 60%",
             onEnter: () => {
                 items.forEach(item => item.classList.add('is-active'));
-                
+
                 clearTimeout(interactionTimer);
                 interactionTimer = setTimeout(() => {
                     items.forEach(item => item.classList.add('interaction-ready'));
-                }, 500); 
+                }, 500);
             },
             onLeaveBack: () => {
                 items.forEach(item => {
@@ -1154,22 +631,23 @@
         const modalImage = document.getElementById('modal-image');
 
         const updateGalleryBackground = (src) => {
-             if (galleryBgImg.src.includes(src)) { return; }
-             gsap.killTweensOf(galleryBgImg);
-             gsap.to(galleryBgImg, { 
-                 opacity: 0, duration: 0.2, filter: 'blur(5px)', 
-                 onComplete: () => {
-                     galleryBgImg.src = src;
-                     gsap.to(galleryBgImg, { opacity: 1, duration: 0.4, filter: 'blur(0px)' }); 
-             }});
+            if (galleryBgImg.src.includes(src)) { return; }
+            gsap.killTweensOf(galleryBgImg);
+            gsap.to(galleryBgImg, {
+                opacity: 0, duration: 0.2, filter: 'blur(5px)',
+                onComplete: () => {
+                    galleryBgImg.src = src;
+                    gsap.to(galleryBgImg, { opacity: 1, duration: 0.4, filter: 'blur(0px)' });
+                }
+            });
         };
 
         const closeModal = () => {
             modalContentWrapper.classList.remove('modal-enter-active');
             modal.classList.add('hidden');
-            modalImage.src = ''; 
+            modalImage.src = '';
         };
-        
+
         const openModal = (src) => {
             modal.classList.remove('hidden');
             loadingSpinner.classList.remove('hidden');
@@ -1191,26 +669,26 @@
             tempImg.src = src;
         };
 
-        modalImage.addEventListener('click', closeModal); 
+        modalImage.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
 
         // --- About Section Strings ---
         function createAboutStrings() {
             const container = document.querySelector('.about-strings');
-            container.innerHTML = ''; 
-            
-            const stringCount = 10; 
+            container.innerHTML = '';
+
+            const stringCount = 10;
 
             for (let i = 0; i < stringCount; i++) {
                 const str = document.createElement('div');
                 str.classList.add('about-string');
                 str.style.left = Math.random() * 100 + '%';
-                const r = Math.floor(Math.random() * 155) + 100; 
+                const r = Math.floor(Math.random() * 155) + 100;
                 const g = Math.floor(Math.random() * 155) + 100;
                 const b = Math.floor(Math.random() * 155) + 100;
-                const opacity = (Math.random() * 0.4 + 0.1).toFixed(2); 
-                str.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`; 
+                const opacity = (Math.random() * 0.4 + 0.1).toFixed(2);
+                str.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`;
                 str.style.transitionDelay = Math.random() * 1 + 's';
                 container.appendChild(str);
             }
@@ -1225,19 +703,19 @@
             for (let i = 0; i < balloonCount; i++) {
                 const balloon = document.createElement('div');
                 balloon.classList.add('balloon');
-                
+
                 // 랜덤 속성 부여: 크기를 작게 조절 (5px ~ 20px)
-                const size = Math.random() * 15 + 5; 
+                const size = Math.random() * 15 + 5;
                 const left = Math.random() * 100; // 0% ~ 100%
-                
+
                 balloon.style.width = `${size}px`;
                 balloon.style.height = `${size}px`;
                 balloon.style.left = `${left}%`;
-                
+
                 // 투명도 조절로 '연한' 느낌 (0.2 ~ 0.7)
                 const opacity = Math.random() * 0.5 + 0.2;
                 balloon.style.backgroundColor = `rgba(255, 255, 255, ${opacity})`;
-                
+
                 container.appendChild(balloon);
             }
 
@@ -1246,13 +724,13 @@
                 scrollTrigger: {
                     trigger: "footer",
                     start: "top 90%", // 푸터가 보이기 시작할 때
-                    toggleActions: "restart none none reset" 
+                    toggleActions: "restart none none reset"
                 }
             });
 
             // 1. 배경색 전환: 회색(#505050) -> 검정(#000000)
-            tl.fromTo("footer", 
-                { backgroundColor: "#505050" }, 
+            tl.fromTo("footer",
+                { backgroundColor: "#505050" },
                 { backgroundColor: "#000000", duration: 3, ease: "power1.inOut" },
                 0 // 시작 시간 0초 (동시 실행)
             );
@@ -1269,10 +747,11 @@
                 }
             }, 0); // 배경색 전환과 동시에 시작
         }
-        
+
         // 실행
         createBalloons();
 
     </script>
 </body>
+
 </html>
