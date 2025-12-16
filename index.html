@@ -22,7 +22,10 @@
         </lottie-player>
 
         <div class="scroll-down-guide">
-            <span>Scroll</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -279,7 +282,8 @@
             scrollTrigger: {
                 trigger: "#hero",
                 start: "top top",
-                end: "+=4000",
+                // [수정됨] 스크롤 길이를 20% 줄임 (4000 -> 3200) -> [최종 수정] 2600으로 변경
+                end: "+=2600",
                 scrub: 0.5,
                 pin: true,
                 onUpdate: (self) => {
