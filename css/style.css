@@ -67,6 +67,49 @@
      max-height: 80vw;
  }
 
+ /* [NEW] 스크롤 유도 화살표 스타일 */
+ .scroll-down-guide {
+     position: absolute;
+     bottom: 30px;
+     left: 50%;
+     transform: translateX(-50%);
+     z-index: 20;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 8px;
+     opacity: 0.8;
+     /* [수정됨] ease-in-out 추가하여 부드럽게 움직이도록 변경 */
+     animation: bounce 2s infinite ease-in-out;
+     pointer-events: none; /* 클릭 방지 */
+ }
+
+ .scroll-down-guide span {
+     font-size: 0.8rem;
+     letter-spacing: 2px;
+     text-transform: uppercase;
+     color: rgba(255, 255, 255, 0.7);
+ }
+
+ .scroll-down-guide svg {
+     width: 24px;
+     height: 24px;
+     stroke: rgba(255, 255, 255, 0.9);
+ }
+
+ /* [수정됨] 균일하게 위아래로 둥둥 떠다니는 애니메이션 */
+ @keyframes bounce {
+     0% {
+         transform: translateX(-50%) translateY(0);
+     }
+     50% {
+         transform: translateX(-50%) translateY(-15px); /* 위로 부드럽게 이동 */
+     }
+     100% {
+         transform: translateX(-50%) translateY(0); /* 다시 제자리로 */
+     }
+ }
+
  /* -------------------------------------------
             About Me 섹션 스타일
             ------------------------------------------- */
